@@ -1,6 +1,8 @@
 multi-agent-systems
 ===================
+
 Requirements:
+
     boost (>= 1.47)
     cmake (>= 2.8.0)
     make (>= 1.8)
