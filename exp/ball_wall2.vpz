@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE vle_project PUBLIC "-//VLE TEAM//DTD Strict//EN" "http://www.vle-project.org/vle-1.1.0.dtd">
+<vle_project version="1.1.0" date="2013-Jul-05 08:38:13" author="Remy Phelipot">
+<structures>
+<model name="Top model" type="coupled" x="0" y="0" width="813" height="468"  >
+<submodels>
+<model name="exe" type="atomic" dynamics="dyn_exe" x="20" y="34" width="100" height="30" >
+</model>
+</submodels>
+<connections>
+</connections>
+</model>
+</structures>
+<dynamics>
+<dynamic name="dyn_exe" library="ExecuterWallBall" package="vle.extension.mas"  />
+<dynamic name="dyn_wall" library="SimpleWall" package="vle.extension.mas"  />
+</dynamics>
+<classes>
+<class name="toto" >
+<model name="wall" type="coupled" x="5" width="813" height="468"  >
+<submodels>
+<model name="wall" type="atomic" conditions="param" dynamics="dyn_wall" x="128" y="150" width="100" height="30" >
+</model>
+</submodels>
+<connections>
+</connections>
+</model>
+</class>
+<class name="walls" >
+<model name="wall" type="atomic" dynamics="dyn_exe" >
+</model>
+</class>
+</classes>
+<experiment name="exp" duration="1.000000000000000" begin="0.000000000000000" combination="linear"  >
+<conditions>
+<condition name="param" >
+ <port name="x1" >
+<double>0.000000000000000</double>
+</port>
+ <port name="x2" >
+<double>0.000000000000000</double>
+</port>
+ <port name="y1" >
+<double>0.000000000000000</double>
+</port>
+ <port name="y2" >
+<double>0.000000000000000</double>
+</port>
+</condition>
+</conditions>
+<views>
+</views>
+</experiment>
+</vle_project>

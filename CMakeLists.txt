@@ -1,7 +1,15 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-PROJECT(multi-agent-systems)
+PROJECT(vle.extension.mas CXX C)
 ENABLE_TESTING()
 INCLUDE( CTest )
+
+##
+## Modules
+##
+INCLUDE(CheckIncludeFileCXX)
+INCLUDE(CheckIncludeFile)
+INCLUDE(CheckLibraryExists)
+INCLUDE(CMakeDetermineCCompiler)
 
 ##
 ## Build type
@@ -9,13 +17,14 @@ INCLUDE( CTest )
 if (CMAKE_BUILD_TYPE STREQUAL "")
   SET(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build" FORCE)
 endif ()
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH})
 
 ##
 ## GCC Flags
 ##
 if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -std=c++11")
   option(WITH_COVERAGE "use coverage build [default: off]" OFF)
   if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb3")
@@ -42,10 +51,15 @@ FIND_PACKAGE(Boost 1.47 COMPONENTS graph random REQUIRED)
 FIND_PACKAGE(Boost 1.47 COMPONENTS unit_test_framework)
 
 ##
+## Find vle package
+set(VLE_DEBUG 0)
+find_package(VLE REQUIRED)
+
+##
 ## Add source directory
 ##
 ADD_SUBDIRECTORY(src)
-
+ADD_SUBDIRECTORY(exp)
 ##
 ## Tests
 ##
@@ -71,3 +85,8 @@ if (WITH_DOXYGEN)
     add_subdirectory(doxygen)
 endif (WITH_DOXYGEN)
 
+##
+## Install files
+##
+INSTALL(FILES COPYING README.md
+  DESTINATION .)

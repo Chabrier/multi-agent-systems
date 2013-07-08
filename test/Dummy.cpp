@@ -5,7 +5,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/auto_unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
-#include <Dummy.hpp>
+
 BOOST_AUTO_TEST_CASE(test_de_test)
 {
     BOOST_REQUIRE(0 == 0);
@@ -13,6 +13,5 @@ BOOST_AUTO_TEST_CASE(test_de_test)
     {
         BOOST_REQUIRE(0 == 0);
     }
-    foo(0);
 }
 

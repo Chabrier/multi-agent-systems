@@ -1,0 +1,17 @@
+#SET(SRCS Agent.cpp)
+SET(HEADERS Agent.hpp Scheduler.hpp InfiniteWall.hpp Events.hpp)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS}
+	${VLE_INCLUDE_DIRS})
+LINK_DIRECTORIES(${VLE_LIBRARY_DIRS} ${Boost_LIBRARY_DIRS})
+
+#ADD_LIBRARY(multi-agent-systems STATIC ${SRCS})
+
+#IF (Boost_UNIT_TEST_FRAMEWORK_FOUND AND WITH_TEST)
+#  TARGET_LINK_LIBRARIES(multi-agent-systems -fprofile-arcs)
+#ENDIF (Boost_UNIT_TEST_FRAMEWORK_FOUND AND WITH_TEST)
+
+#TARGET_LINK_LIBRARIES(multi-agent-systems ${VLE_LIBRARIES})
+
+#INSTALL(TARGETS multi-agent-systems ARCHIVE DESTINATION lib)
+
+INSTALL(FILES ${HEADERS} DESTINATION src/vle/extension)
