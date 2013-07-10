@@ -42,12 +42,24 @@ class PassiveAgent : public Agent, public vd::Dynamics
 {
 public:
     PassiveAgent(const vd::DynamicsInit &init, const vd::InitEventList &events)
-    :vd::Dynamics(init, events)
+    :vd::Dynamics(init, events),mOutputPortName("agent_output")
+    ,mInputPortName("positions")
     {}
 
     virtual void init() = 0;
-
+    virtual void handleEvent(Event::property_map&) = 0;
+    
+    /* vle::devs::Dynamics override */
+    virtual vd::Time init(const vd::Time& time);
+    virtual void internalTransition(const vd::Time&);
+    virtual vd::Time timeAdvance() const;
+    virtual void output(const vd::Time&, vd::ExternalEventList&) const;
+    virtual void externalTransition(
+        const vd::ExternalEventList&, const vd::Time&);
+protected:
+    std::string mOutputPortName;
+    std::string mInputPortName;
 };
 
-}}}
+}}}// namespace vle extension mas
 #endif

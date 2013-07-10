@@ -29,6 +29,7 @@
 #include <vle/devs/Time.hpp>
 #include <vle/value/Value.hpp>
 
+#include <map>
 #include <boost/numeric/ublas/vector.hpp>
 
 using namespace boost::numeric;
@@ -78,9 +79,6 @@ private:
     vle::devs::Time mTime;
     std::map<std::string,std::shared_ptr<vv::Value>> mProperties;
 };
-
-bool operator> (const Event& a, const Event& b)
-{ return a.mTime > b.mTime; }
 
 }}}// namespace vle extension mas
 #endif

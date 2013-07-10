@@ -65,75 +65,17 @@ public:
 
     void init() {}
 
-    /* DEVS DYNAMICS FUNCTIONS */
-    vd::Time init(const vd::Time& time)
+    void handleEvent(Event::property_map& properties)
     {
-        std::cout << "init wall" << std::endl << std::flush;
-        mLastUpdate = time;
-        return vd::infinity;
-    }
+        bg::model::d2::point_xy<double> xy_ball;//Ball position
+        bn::ublas::vector<double> v_ball(2);//Ball direction vector
 
-    vd::Time timeAdvance() const
-    {
-        std::cout << "Time advance wall" << std::endl<< std::flush;
-        if (mEventsToSend.size() > 0)
-            return 0.0;
+        xy_ball.x(properties.at("x")->toDouble().value());
+        xy_ball.y(properties.at("y")->toDouble().value());
+        v_ball[0] = (properties.at("dx")->toDouble().value());
+        v_ball[1] = (properties.at("dy")->toDouble().value());
         
-        return vd::infinity;
-    }
-
-    void internalTransition(const vd::Time& /*time*/)
-    {
-        std::cout << "internalTransition wall" << std::endl<< std::flush;
-        mEventsToSend.clear();
-    }
-    
-    void externalTransition(const vd::ExternalEventList& event,
-                            const vd::Time& /*time*/)
-    {
-        std::cout << "External Transition wall" << std::endl<< std::flush;
-        for (size_t i = 0; i < event.size(); ++i)
-        {
-            if(event[i]->getPortName() == "positions")
-            {
-                bg::model::d2::point_xy<double> xy_ball;//Ball position
-                bn::ublas::vector<double> v_ball(2);//Ball direction vector
-                for(vv::MapValue::const_iterator it = event[i]->getAttributes().begin();
-                  it != event[i]->getAttributes().end(); ++it)
-                {
-                    if(it->first == "x")
-                        xy_ball.x(it->second->toDouble().value());
-                    else if (it->first == "y")
-                        xy_ball.y(it->second->toDouble().value());
-                    else if(it->first == "dx")
-                        v_ball[0] = (it->second->toDouble().value());
-                    else if (it->first == "dy")
-                        v_ball[1] = (it->second->toDouble().value());
-                }
-                std::cout << "Event listened : "<<xy_ball.x() <<" "<<xy_ball.y()
-                    <<" "<<v_ball[0]<<" "<<v_ball[1]<<std::endl;
-
-                check_collision(xy_ball, v_ball);
-            }
-        }
-    }
-
-    void output(const vd::Time&, vd::ExternalEventList& output) const
-    {
-        for(std::vector<Event>::const_iterator it = mEventsToSend.begin();
-            it != mEventsToSend.end(); ++it)
-        {
-            vd::ExternalEvent* event = new vd::ExternalEvent("agent_output");
-            event << vd::attribute("time", it->time());
-
-            for(Event::property_map::const_iterator itE = it->properties_cbegin();
-                itE != it->properties_cend(); ++itE)
-            {
-                vv::Value *v = it->property(itE->first).get()->clone();
-                event << vd::attribute(itE->first, v);
-            }
-            output.push_back(event);
-        }
+        check_collision(xy_ball, v_ball);
     }
 
     /* CUSTOM FUNCTIONS */
