@@ -23,64 +23,31 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-#ifndef EVENTS_HPP
-#define EVENTS_HPP
+#ifndef PASSIVEAGENT_HPP
+#define PASSIVEAGENT_HPP
 
+#include <vle/extension/mas/Agent.hpp>
 #include <vle/devs/Time.hpp>
-#include <vle/value/Value.hpp>
+#include <vle/devs/Dynamics.hpp>
 
-#include <boost/numeric/ublas/vector.hpp>
-
-using namespace boost::numeric;
-
-namespace vv = vle::value; 
+using namespace boost;
+namespace vd = vle::devs;
+namespace vv = vle::value;
 
 namespace vle {
 namespace extension {
 namespace mas {
 
-class Event
+class PassiveAgent : public Agent, public vd::Dynamics
 {
 public:
-    typedef std::map<std::string,std::shared_ptr<vv::Value>> property_map;
-    Event():Event(0){}
-    Event(double t):mTime(t){}
+    PassiveAgent(const vd::DynamicsInit &init, const vd::InitEventList &events)
+    :vd::Dynamics(init, events)
+    {}
 
-    std::shared_ptr<vv::Value> property(const std::string& title)const
-    { return mProperties.at(title); }
+    virtual void init() = 0;
 
-    bool exist_property(const std::string& title)const
-    { return (mProperties.find(title) != mProperties.end()); }
-
-    void add_property(const std::string &t, vv::Value *v)
-    {
-        mProperties.insert(
-            std::make_pair(
-                t,
-                std::shared_ptr<vv::Value>(v)));
-    }
-
-    const vle::devs::Time& time() const
-    { return mTime; }
-
-    void time(const vle::devs::Time &t)
-    { mTime = t; }
-
-    property_map::const_iterator properties_cbegin() const
-    { return mProperties.cbegin(); }
-    
-    property_map::const_iterator properties_cend() const
-    { return mProperties.cend(); }
-    
-    friend bool operator> (const Event& a, const Event& b);
-protected:
-private:
-    vle::devs::Time mTime;
-    std::map<std::string,std::shared_ptr<vv::Value>> mProperties;
 };
 
-bool operator> (const Event& a, const Event& b)
-{ return a.mTime > b.mTime; }
-
-}}}// namespace vle extension mas
+}}}
 #endif

@@ -33,7 +33,7 @@
 #include <boost/geometry/arithmetic/dot_product.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 
-#include <vle/extension/mas/Agent.hpp>
+#include <vle/extension/mas/PassiveAgent.hpp>
 #include <vle/extension/mas/Events.hpp>
 
 using namespace vle::extension::mas;
@@ -44,11 +44,11 @@ namespace bn = boost::numeric;
 
 namespace mas { namespace test { namespace dynamics {
 
-class SimpleWall : public Agent
+class SimpleWall : public PassiveAgent
 {
 public:
     SimpleWall(const vd::DynamicsInit& init, const vd::InitEventList& events)
-        : Agent(init, events)
+        : PassiveAgent(init, events)
     {
         x1.x( (events.exist("x1"))
             ? events.getDouble("x1") : -1);
@@ -62,6 +62,8 @@ public:
         x2.y( (events.exist("y2"))
             ? events.getDouble("y2") : -1);
     }
+
+    void init() {}
 
     /* DEVS DYNAMICS FUNCTIONS */
     vd::Time init(const vd::Time& time)
@@ -116,6 +118,24 @@ public:
         }
     }
 
+    void output(const vd::Time&, vd::ExternalEventList& output) const
+    {
+        for(std::vector<Event>::const_iterator it = mEventsToSend.begin();
+            it != mEventsToSend.end(); ++it)
+        {
+            vd::ExternalEvent* event = new vd::ExternalEvent("agent_output");
+            event << vd::attribute("time", it->time());
+
+            for(Event::property_map::const_iterator itE = it->properties_cbegin();
+                itE != it->properties_cend(); ++itE)
+            {
+                vv::Value *v = it->property(itE->first).get()->clone();
+                event << vd::attribute(itE->first, v);
+            }
+            output.push_back(event);
+        }
+    }
+
     /* CUSTOM FUNCTIONS */
     void check_collision(bg::model::d2::point_xy<double> xy_ball,
         bn::ublas::vector<double> v_ball)
@@ -167,9 +187,12 @@ public:
                 Event new_collision(collision_time);
  
                 new_vector = compute_new_vector(wall_vect,norm_wall,v_ball);
-                new_collision.add_property("new_dx", new vle::value::Double(new_vector[0]));
-                new_collision.add_property("new_dy", new vle::value::Double(new_vector[1]));
-                new_collision.add_property("type,", new vle::value::String("collision"));
+                new_collision.add_property("new_dx",
+                    new vv::Double(new_vector[0]));
+                new_collision.add_property("new_dy",
+                    new vv::Double(new_vector[1]));
+                new_collision.add_property("type,",
+                    new vv::String("collision"));
                 mEventsToSend.push_back(new_collision);
 
                 std::cout << "New vector : " << new_vector[0]
@@ -218,7 +241,6 @@ private:
     bg::model::d2::point_xy<double> x1;
     bg::model::d2::point_xy<double> x2;
 };
-
 }}} // namespace vle example
 DECLARE_DYNAMICS(mas::test::dynamics::SimpleWall)
 

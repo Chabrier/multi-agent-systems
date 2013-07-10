@@ -29,7 +29,7 @@
 
 #include <boost/geometry/geometries/point_xy.hpp>
 
-#include <vle/extension/mas/Agent.hpp>
+#include <vle/extension/mas/ActiveAgent.hpp>
 #include <vle/extension/mas/Events.hpp>
 
 namespace vd = vle::devs;
@@ -40,11 +40,11 @@ using namespace vle::extension::mas;
 
 namespace mas { namespace test { namespace dynamics {
 
-class Ball : public Agent
+class Ball : public ActiveAgent
 {
 public:
     Ball(const vd::DynamicsInit& init, const vd::InitEventList& events)
-        : Agent(init, events)
+        : ActiveAgent(init, events)
     {
         mmDirectionChanged = true;
         mPosition.x( (events.exist("x"))
@@ -59,6 +59,8 @@ public:
         mDirection.y( (events.exist("dy"))
             ? events.getDouble("dy") : -1);
     }
+
+    void init() { }
     
     vd::Time init(const vd::Time& time)
     {

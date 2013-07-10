@@ -37,29 +37,9 @@ namespace vle {
 namespace extension {
 namespace mas {
 
-class Agent : public vd::Dynamics{
+class Agent{
 public:
-    Agent(const vd::DynamicsInit &init, const vd::InitEventList &events)
-    :Dynamics(init, events)
-    {}
-    
-    virtual void output(const vd::Time&, vd::ExternalEventList& output) const
-    {
-        for(std::vector<Event>::const_iterator it = mEventsToSend.begin();
-            it != mEventsToSend.end(); ++it)
-        {
-            vd::ExternalEvent* event = new vd::ExternalEvent("agent_output");
-            event << vd::attribute("time", it->time());
-
-            for(Event::property_map::const_iterator itE = it->properties_cbegin();
-                itE != it->properties_cend(); ++itE)
-            {
-                vv::Value *v = it->property(itE->first).get()->clone();
-                event << vd::attribute(itE->first, v);
-            }
-            output.push_back(event);
-        }
-    }
+    virtual void init() = 0;
 protected:
     /*! \var mEventsToSend
     *\brief Vector containing event to send
@@ -69,7 +49,6 @@ protected:
     */
     
     std::vector<Event> mEventsToSend;
-    Scheduler<Event> mScheduler;
     vd::Time mLastUpdate;
 private:
 };
