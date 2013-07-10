@@ -47,7 +47,7 @@ protected:
     * function is called.
     *\see http://www.vle-project.org/wiki/Mod%C3%A8le_atomique_fonction_de_sortie
     */
-    
+
     std::vector<Event> mEventsToSend;
     vd::Time mLastUpdate;
 private:

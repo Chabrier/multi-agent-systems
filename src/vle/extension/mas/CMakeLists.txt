@@ -2,7 +2,7 @@ SET(SRCS PassiveAgent.cpp Events.cpp)
 SET(HEADERS Agent.hpp Scheduler.hpp Events.hpp PassiveAgent.hpp
     ActiveAgent.hpp)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS}
-	${VLE_INCLUDE_DIRS})
+    ${VLE_INCLUDE_DIRS})
 LINK_DIRECTORIES(${VLE_LIBRARY_DIRS} ${Boost_LIBRARY_DIRS})
 
 ADD_LIBRARY(mas STATIC ${SRCS})

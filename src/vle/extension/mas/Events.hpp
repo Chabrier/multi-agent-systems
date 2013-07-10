@@ -34,7 +34,7 @@
 
 using namespace boost::numeric;
 
-namespace vv = vle::value; 
+namespace vv = vle::value;
 
 namespace vle {
 namespace extension {
@@ -69,10 +69,10 @@ public:
 
     property_map::const_iterator properties_cbegin() const
     { return mProperties.cbegin(); }
-    
+
     property_map::const_iterator properties_cend() const
     { return mProperties.cend(); }
-    
+
     friend bool operator> (const Event& a, const Event& b);
 protected:
 private:

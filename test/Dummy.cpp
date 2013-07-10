@@ -9,8 +9,7 @@
 BOOST_AUTO_TEST_CASE(test_de_test)
 {
     BOOST_REQUIRE(0 == 0);
-    if( 2 == 3)
-    {
+    if( 2 == 3){
         BOOST_REQUIRE(0 == 0);
     }
 }

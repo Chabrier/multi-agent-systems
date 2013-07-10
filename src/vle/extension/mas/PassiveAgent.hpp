@@ -30,7 +30,6 @@
 #include <vle/devs/Time.hpp>
 #include <vle/devs/Dynamics.hpp>
 
-using namespace boost;
 namespace vd = vle::devs;
 namespace vv = vle::value;
 
@@ -48,7 +47,7 @@ public:
 
     virtual void init() = 0;
     virtual void handleEvent(Event::property_map&) = 0;
-    
+
     /* vle::devs::Dynamics override */
     virtual vd::Time init(const vd::Time& time);
     virtual void internalTransition(const vd::Time&);

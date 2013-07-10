@@ -50,8 +50,8 @@ public:
         cond_Mur.setValueToPort("y1", vv::Double(0));
         cond_Mur.setValueToPort("x2", vv::Double(1));
         cond_Mur.setValueToPort("y2", vv::Double(1));
-        
-        
+
+
         createModelFromClass(
                        "toto",
                        "wall");
@@ -59,10 +59,10 @@ public:
         cond_Mur.setValueToPort("y1", vv::Double(0));
         cond_Mur.setValueToPort("x2", vv::Double(-3));
         cond_Mur.setValueToPort("y2", vv::Double(20));
-        
+
         createModelFromClass("toto","walli");
 
-                       
+
         return vd::infinity;
     }
 };

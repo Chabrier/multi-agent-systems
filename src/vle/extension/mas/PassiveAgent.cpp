@@ -19,7 +19,7 @@ vd::Time PassiveAgent::timeAdvance() const
 {
     if (mEventsToSend.size() > 0)
         return 0.0;
-    
+
     return vd::infinity;
 }
 

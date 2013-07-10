@@ -49,19 +49,19 @@ public:
         mmDirectionChanged = true;
         mPosition.x( (events.exist("x"))
             ? events.getDouble("x") : -1);
-            
+
         mPosition.y( (events.exist("y"))
             ? events.getDouble("y") : -1);
-            
+
         mDirection.x( (events.exist("dx"))
             ? events.getDouble("dx") : -1);
-            
+
         mDirection.y( (events.exist("dy"))
             ? events.getDouble("dy") : -1);
     }
 
     void init() { }
-    
+
     vd::Time init(const vd::Time& time)
     {
         std::cout << "init ball" << std::endl<< std::flush;
@@ -72,15 +72,14 @@ public:
     vd::Time timeAdvance() const
     {
         std::cout << "Time advance ball" << std::endl<< std::flush;
-        
-        if (!mScheduler.empty())
-        {
+
+        if (!mScheduler.empty()){
             return mScheduler.next_event().time();
         }
-        
+
         if (mmDirectionChanged)
             return 0;
-        
+
         return vd::infinity;
     }
 
@@ -88,16 +87,14 @@ public:
     {
         mmDirectionChanged = false;
         std::cout << "internalTransition ball" << std::endl<< std::flush;
-        if (!mScheduler.empty())
-        {
+        if (!mScheduler.empty()){
             double delta_t = time - mLastUpdate;
             Event next_event = mScheduler.next_event();
-            
+
             mPosition.x((mDirection.x() * delta_t) + mPosition.x());
             mPosition.y((mDirection.y() * delta_t) + mPosition.y());
             std::cout<<"1"<<std::endl;
-            if(next_event.property("type")->toString().value() == "collision")
-            {
+            if(next_event.property("type")->toString().value() == "collision"){
                 double n_dx, n_dy;
                             std::cout<<"2"<<std::endl;
 
@@ -105,12 +102,12 @@ public:
                             std::cout<<"3"<<std::endl;
 
                 n_dy = next_event.property("new_dy")->toDouble().value();
-                
+
                 mDirection.x(n_dx);
                 mDirection.y(n_dy);
                 mmDirectionChanged = true;
             }
-            
+
             mScheduler.remove_next_event();
             mLastUpdate = time;
         }
@@ -121,27 +118,21 @@ public:
     {
         std::cout << "externalTransition ball" << std::endl<< std::flush;
 
-        for (size_t i = 0; i < event.size(); ++i)
-        {
-            if (event[i]->getPortName() == "perturbs")
-            {
+        for (size_t i = 0; i < event.size(); ++i){
+            if (event[i]->getPortName() == "perturbs"){
               Event new_e;
-              new_e.add_property("type", new vv::String("collision"));   
+              new_e.add_property("type", new vv::String("collision"));
               for(vv::MapValue::const_iterator it = event[i]->getAttributes().begin();
-                  it != event[i]->getAttributes().end(); ++it)
-              {
-                if(it->first == "time")
-                {
+                  it != event[i]->getAttributes().end(); ++it){
+                if(it->first == "time"){
                     std::cout << "Add event in scheduler"<<std::endl;
                     new_e.time(it->second->toDouble().value());
                 }
-                if(it->first == "new_dx")
-                {
+                if(it->first == "new_dx"){
                     new_e.add_property("new_dx",
                          new vv::Double(it->second->toDouble().value()));
                 }
-                if(it->first == "new_dy")
-                {
+                if(it->first == "new_dy"){
                     new_e.add_property("new_dy",
                          new vv::Double(it->second->toDouble().value()));
                 }
@@ -150,13 +141,12 @@ public:
             }
         }
     }
-     
+
     void output(const vd::Time& /*time*/,
                 vd::ExternalEventList& output) const
     {
         std::cout << "output ball" << std::endl<< std::flush;
-        if (mmDirectionChanged)
-        {
+        if (mmDirectionChanged){
             std::cout << "output ball" << std::endl;
             vd::ExternalEvent* event = new vd::ExternalEvent("positions");
             event << vd::attribute("x", mPosition.x())
@@ -170,7 +160,7 @@ public:
     vv::Value* observation(const vd::ObservationEvent& event) const
     {
         vd::Time delta_t = event.getTime() - mLastUpdate;
-        
+
         if (event.onPort("x")) {
             return new vv::Double((mDirection.x() * delta_t) + mPosition.x());
         }

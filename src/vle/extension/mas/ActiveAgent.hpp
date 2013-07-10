@@ -34,8 +34,6 @@
 
 namespace vd = vle::devs;
 namespace vv = vle::value;
-namespace bg = boost::geometry;
-namespace bn = boost::numeric;
 
 namespace vle { namespace extension { namespace mas {
 

@@ -24,7 +24,7 @@ struct A{
         //~ vle::vpz::AtomicModel model("", 0);
         //~ vd::PackageId packageid;
         //~ vd::DynamicsInit dynInit(model, packageid);
-//~ 
+//~
         //~ a.reset(new vemas::Agent(dynInit, vle::value::Map()));
     }
     ~A() { BOOST_TEST_MESSAGE( "teardown fixture" ); }

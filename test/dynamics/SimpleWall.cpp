@@ -52,10 +52,10 @@ public:
     {
         x1.x( (events.exist("x1"))
             ? events.getDouble("x1") : -1);
-            
+
         x2.x( (events.exist("x2"))
             ? events.getDouble("x2") : -1);
-            
+
         x1.y( (events.exist("y1"))
             ? events.getDouble("y1") : -1);
 
@@ -74,7 +74,7 @@ public:
         xy_ball.y(properties.at("y")->toDouble().value());
         v_ball[0] = (properties.at("dx")->toDouble().value());
         v_ball[1] = (properties.at("dy")->toDouble().value());
-        
+
         check_collision(xy_ball, v_ball);
     }
 
@@ -105,7 +105,7 @@ public:
         D = H - (A*x1.x()) - (B*x1.y());
         H = A*xy_ball.x() + B*xy_ball.y() + D;
         R = H / (norm_wall[0] * v_ball[0] + norm_wall[1] * v_ball[1]);
-        
+
         xy_collision.x(xy_ball.x() - ( v_ball[0] * R));
         xy_collision.y(xy_ball.y() - ( v_ball[1] * R));
 
@@ -114,20 +114,18 @@ public:
         a[1] = x1.y() - xy_collision.y();
         b[0] = x2.x() - xy_collision.x();
         b[1] = x2.y() - xy_collision.y();
-        
+
         dotprod =  a[0] * b[0] +  a[1] * b[1];
 
-        if (dotprod <= 0)
-        {
+        if (dotprod <= 0){
             double collision_distance, collision_time;
             collision_distance = bg::distance(xy_ball, xy_collision);
             collision_time =  collision_distance / bn::ublas::norm_2(v_ball);
 
-            if(collision_distance > 0)
-            {
+            if(collision_distance > 0){
                 bn::ublas::vector<double> new_vector(2);
                 Event new_collision(collision_time);
- 
+
                 new_vector = compute_new_vector(wall_vect,norm_wall,v_ball);
                 new_collision.add_property("new_dx",
                     new vv::Double(new_vector[0]));
@@ -140,9 +138,7 @@ public:
                 std::cout << "New vector : " << new_vector[0]
                     <<" "<< new_vector[1]<< std::endl;
             }
-        }
-        else
-        {
+        }else{
             std::cout << "Pas de collision!!!!!!" << std::endl;
         }
     }
@@ -155,24 +151,24 @@ public:
         bn::ublas::vector<double> p_vc(2), p_vn(2);
         bn::ublas::vector<double> wall_vect_unity(3),norm_vect_unit(3);
         double dotprod;
-        
+
         /* compute unity vectors */
         wall_vect_unity = wall_vect / bn::ublas::norm_2(wall_vect);
         norm_vect_unit = norm_wall_vect / bn::ublas::norm_2(norm_wall_vect);
-        
+
         /* compute dotproduct of direction vector/wall vector */
         dotprod = wall_vect_unity[0] * ball_vect[0]
             + wall_vect_unity[1] * ball_vect[1];
 
-        /* vector projection */    
+        /* vector projection */
         p_vc[0] = dotprod * wall_vect_unity[0];
         p_vc[1] = dotprod * wall_vect_unity[1];
 
         /* compute dotproduct of direction vector/normal vector */
         dotprod = norm_vect_unit[0] * ball_vect[0]
             + norm_vect_unit[1] * ball_vect[1];
-            
-        /* vector projection + inversing */ 
+
+        /* vector projection + inversing */
         p_vn[0] = -1 * dotprod * norm_vect_unit[0];
         p_vn[1] = -1 * dotprod * norm_vect_unit[1];
 
