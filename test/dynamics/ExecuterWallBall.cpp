@@ -27,7 +27,7 @@
 #include <vle/value/Value.hpp>
 #include <vle/devs/Executive.hpp>
 #include <vle/value/Map.hpp>
-#include <vle/extension/multi-agent-systems/Agent.hpp>
+#include <vle/extension/mas/Agent.hpp>
 
 namespace vd = vle::devs;
 namespace vv = vle::value;
