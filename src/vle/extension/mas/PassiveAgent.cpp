@@ -28,7 +28,6 @@ void PassiveAgent::output(const vd::Time&, vd::ExternalEventList& output) const
     for(std::vector<Event>::const_iterator it = mEventsToSend.begin();
     it != mEventsToSend.end(); ++it) {
         vd::ExternalEvent* event = new vd::ExternalEvent(mOutputPortName);
-        event << vd::attribute("time", it->time());
 
         for(Event::property_map::const_iterator itE = it->properties_cbegin();
         itE != it->properties_cend(); ++itE){

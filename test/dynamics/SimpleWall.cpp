@@ -131,7 +131,7 @@ public:
                     new vv::Double(new_vector[0]));
                 new_collision.add_property("new_dy",
                     new vv::Double(new_vector[1]));
-                new_collision.add_property("type,",
+                new_collision.add_property("type",
                     new vv::String("collision"));
                 mEventsToSend.push_back(new_collision);
 

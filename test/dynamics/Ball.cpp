@@ -74,7 +74,7 @@ public:
         std::cout << "Time advance ball" << std::endl<< std::flush;
 
         if (!mScheduler.empty()){
-            return mScheduler.next_event().time();
+            return mScheduler.next_event().property("time")->toDouble().value();
         }
 
         if (mmDirectionChanged)
@@ -122,20 +122,10 @@ public:
             if (event[i]->getPortName() == "perturbs"){
               Event new_e;
               new_e.add_property("type", new vv::String("collision"));
+
               for(vv::MapValue::const_iterator it = event[i]->getAttributes().begin();
                   it != event[i]->getAttributes().end(); ++it){
-                if(it->first == "time"){
-                    std::cout << "Add event in scheduler"<<std::endl;
-                    new_e.time(it->second->toDouble().value());
-                }
-                if(it->first == "new_dx"){
-                    new_e.add_property("new_dx",
-                         new vv::Double(it->second->toDouble().value()));
-                }
-                if(it->first == "new_dy"){
-                    new_e.add_property("new_dy",
-                         new vv::Double(it->second->toDouble().value()));
-                }
+                    new_e.add_property(it->first, it->second->clone());
               }
               mScheduler.add_event(new_e);
             }
@@ -145,9 +135,7 @@ public:
     void output(const vd::Time& /*time*/,
                 vd::ExternalEventList& output) const
     {
-        std::cout << "output ball" << std::endl<< std::flush;
         if (mmDirectionChanged){
-            std::cout << "output ball" << std::endl;
             vd::ExternalEvent* event = new vd::ExternalEvent("positions");
             event << vd::attribute("x", mPosition.x())
                   << vd::attribute("y", mPosition.y())

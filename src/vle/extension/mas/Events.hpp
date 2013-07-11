@@ -28,6 +28,7 @@
 
 #include <vle/devs/Time.hpp>
 #include <vle/value/Value.hpp>
+#include <vle/value/Double.hpp>
 
 #include <map>
 #include <boost/numeric/ublas/vector.hpp>
@@ -45,27 +46,25 @@ class Event
 public:
     typedef std::map<std::string,std::shared_ptr<vv::Value>> property_map;
     Event():Event(0){}
-    Event(double t):mTime(t){}
+    Event(double t){add_property("time", new vv::Double(t));}
 
     std::shared_ptr<vv::Value> property(const std::string& title)const
     { return mProperties.at(title); }
 
-    bool exist_property(const std::string& title)const
+    bool exist_property(const std::string &title)const
     { return (mProperties.find(title) != mProperties.end()); }
 
-    void add_property(const std::string &t, vv::Value *v)
+    void add_property(const std::string &t, vv::Value *&&v)
     {
-        mProperties.insert(
-            std::make_pair(
-                t,
-                std::shared_ptr<vv::Value>(v)));
+        add_property(t, std::shared_ptr<vv::Value>(v));
     }
 
-    const vle::devs::Time& time() const
-    { return mTime; }
-
-    void time(const vle::devs::Time &t)
-    { mTime = t; }
+    void add_property(const std::string &t, const std::shared_ptr<vv::Value> &v)
+    {
+        if(exist_property(t))
+           mProperties.erase(t);
+        mProperties.insert(std::make_pair(t, v));
+    }
 
     property_map::const_iterator properties_cbegin() const
     { return mProperties.cbegin(); }
@@ -76,7 +75,6 @@ public:
     friend bool operator> (const Event& a, const Event& b);
 protected:
 private:
-    vle::devs::Time mTime;
     std::map<std::string,std::shared_ptr<vv::Value>> mProperties;
 };
 

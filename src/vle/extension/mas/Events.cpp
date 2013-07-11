@@ -5,6 +5,6 @@ namespace extension {
 namespace mas {
 
 bool operator> (const Event& a, const Event& b)
-{ return a.mTime > b.mTime; }
+{ return a.mProperties.at("time") > b.mProperties.at("time"); }
 
 }}}
