@@ -10,7 +10,7 @@ vd::Time PassiveAgent::init(const vd::Time& time)
     return vd::infinity;
 }
 
-void PassiveAgent::internalTransition(const vd::Time& /*time*/)
+void PassiveAgent::internalTransition(const vd::Time&)
 {
     mEventsToSend.clear();
 }
@@ -25,14 +25,13 @@ vd::Time PassiveAgent::timeAdvance() const
 
 void PassiveAgent::output(const vd::Time&, vd::ExternalEventList& output) const
 {
-    for(std::vector<Event>::const_iterator it = mEventsToSend.begin();
-    it != mEventsToSend.end(); ++it) {
+    for(auto itE(mEventsToSend.cbegin());itE != mEventsToSend.end(); ++itE) {
         vd::ExternalEvent* event = new vd::ExternalEvent(mOutputPortName);
 
-        for(Event::property_map::const_iterator itE = it->properties_cbegin();
-        itE != it->properties_cend(); ++itE){
-            vv::Value *v = it->property(itE->first).get()->clone();
-            event << vd::attribute(itE->first, v);
+        for(auto itP(itE->properties_cbegin());itP != itE->properties_cend();
+        ++itP){
+            vv::Value *v = itE->property(itP->first).get()->clone();
+            event << vd::attribute(itP->first, v);
         }
         output.push_back(event);
     }
@@ -41,11 +40,10 @@ void PassiveAgent::output(const vd::Time&, vd::ExternalEventList& output) const
 void PassiveAgent::externalTransition(const vd::ExternalEventList& event,
                         const vd::Time&)
 {
-    for(vd::ExternalEventList::const_iterator itE = event.begin();
-        itE != event.end(); ++itE){
+    for(auto itE(event.cbegin());itE != event.cend(); ++itE){
         if((*itE)->getPortName() == mInputPortName){
             Event::property_map parameters;
-            for(vv::MapValue::const_iterator it = (*itE)->getAttributes().begin();
+            for(auto it((*itE)->getAttributes().begin());
               it != (*itE)->getAttributes().end(); ++it){
                 parameters.insert(
                     std::make_pair(

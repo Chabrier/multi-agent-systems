@@ -123,7 +123,7 @@ public:
               Event new_e;
               new_e.add_property("type", new vv::String("collision"));
 
-              for(vv::MapValue::const_iterator it = event[i]->getAttributes().begin();
+              for(auto it(event[i]->getAttributes().begin());
                   it != event[i]->getAttributes().end(); ++it){
                     new_e.add_property(it->first, it->second->clone());
               }
