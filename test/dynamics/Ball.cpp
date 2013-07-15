@@ -101,12 +101,12 @@ public:
                 double n_dx = mDirection.x(), n_dy = mDirection.y();
                 bool isInCorner = false;
 
-                for (auto it(mScheduler.cbegin()); it != mScheduler.cend()
-                     ; ++it) {
-                    if (it->property("time")->toDouble().value() <= next_event["time"]->toDouble().value()) {
+                for (auto event : mScheduler.elements()) {
+                    if (event.property("time")->toDouble().value() <=
+                        next_event["time"]->toDouble().value()) {
                         std::cout << "Next_event:" << next_event["time"]->toDouble().value()
-                                  << " it:" << it->property("time")->toDouble().value() << std::endl;
-                        if (it->property("type")->toString().value()
+                                  << " it:" << event.property("time")->toDouble().value() << std::endl;
+                        if (event.property("type")->toString().value()
                             == "collision") {
                             isInCorner = true;
                         }
@@ -130,7 +130,7 @@ public:
                       " dx:" << mDirection.x() << " dy:" << mDirection.y() << std::endl;
             std::cout << "My position is (computed): " << "x:" << mPosition.x() << " y:" << mPosition.y() <<
                       " dx:" << mDirection.x() << " dy:" << mDirection.y() << std::endl;
-            //mScheduler.remove_next_event();
+
             while (!mScheduler.empty()) {
                 mScheduler.remove_next_event();
             }
@@ -139,19 +139,19 @@ public:
         }
     }
 
-    void externalTransition(const vd::ExternalEventList& event,
+    void externalTransition(const vd::ExternalEventList& events,
                             const vd::Time& /*time*/)
     {
         std::cout << "externalTransition ball" << std::endl << std::flush;
 
-        for (size_t i = 0; i < event.size(); ++i) {
-            if (event[i]->getPortName() == "perturbs") {
+        for (auto event : events) {
+            if (event->getPortName() == "perturbs") {
                 Event new_e;
                 new_e.add_property("type", new vv::String("collision"));
 
-                for (auto it(event[i]->getAttributes().begin());
-                     it != event[i]->getAttributes().end(); ++it) {
-                    new_e.add_property(it->first, it->second->clone());
+                for (auto attribute : event->getAttributes()) {
+                    new_e.add_property(attribute.first,
+                                       attribute.second->clone());
                 }
                 mScheduler.add_event(new_e);
             }

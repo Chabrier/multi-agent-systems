@@ -76,14 +76,9 @@ public:
         mProperties.insert(std::make_pair(t, v));
     }
 
-    property_map::const_iterator properties_cbegin() const
+    const std::map<std::string, std::shared_ptr<vv::Value> >& properties() const
     {
-        return mProperties.cbegin();
-    }
-
-    property_map::const_iterator properties_cend() const
-    {
-        return mProperties.cend();
+        return mProperties;
     }
 
     friend bool operator> (const Event& a, const Event& b);

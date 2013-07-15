@@ -28,30 +28,28 @@ vd::Time PassiveAgent::timeAdvance() const
 
 void PassiveAgent::output(const vd::Time&, vd::ExternalEventList& output) const
 {
-    for (auto itE(mEventsToSend.cbegin()); itE != mEventsToSend.end(); ++itE) {
+    for (auto eventToSend : mEventsToSend) {
         vd::ExternalEvent* event = new vd::ExternalEvent(mOutputPortName);
 
-        for (auto itP(itE->properties_cbegin()); itP != itE->properties_cend();
-             ++itP) {
-            vv::Value *v = itE->property(itP->first).get()->clone();
-            event << vd::attribute(itP->first, v);
+        for (auto p_name : eventToSend.properties()) {
+            vv::Value *v = eventToSend.property(p_name.first).get()->clone();
+            event << vd::attribute(p_name.first, v);
         }
         output.push_back(event);
     }
 }
 
-void PassiveAgent::externalTransition(const vd::ExternalEventList& event,
+void PassiveAgent::externalTransition(const vd::ExternalEventList& events,
                                       const vd::Time&)
 {
-    for (auto itE(event.cbegin()); itE != event.cend(); ++itE) {
-        if ((*itE)->getPortName() == mInputPortName) {
+    for (auto event : events) {
+        if (event->getPortName() == mInputPortName) {
             Event::property_map parameters;
-            for (auto it((*itE)->getAttributes().begin());
-                 it != (*itE)->getAttributes().end(); ++it) {
+            for (auto attribute : event->getAttributes()) {
                 parameters.insert(
                     std::make_pair(
-                        it->first,
-                        std::shared_ptr<vv::Value>(it->second->clone())));
+                        attribute.first,
+                        std::shared_ptr<vv::Value>(attribute.second->clone())));
             }
             handleEvent(parameters);
         }

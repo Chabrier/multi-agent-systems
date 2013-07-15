@@ -43,8 +43,6 @@ class Scheduler
 public:
     typedef typename heap::fibonacci_heap<T, heap::compare<std::greater<T> > >
     Heap;
-    typedef typename Heap::iterator iterator;
-    typedef typename Heap::const_iterator const_iterator;
 
     /* Modifiers */
     /** @brief Add element*/
@@ -86,8 +84,7 @@ public:
         return mHeap.top();
     }
 
-    const_iterator cbegin() {return mHeap.begin();}
-    const_iterator cend() {return mHeap.end();}
+    const Heap& elements() const {return mHeap;}
 protected:
 private:
     Heap mHeap;
