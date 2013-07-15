@@ -6,7 +6,7 @@ Requirements:
     boost (>= 1.47)
     cmake (>= 2.8.0)
     make (>= 1.8)
-    c++ compiler (gcc >= 4.4, clang >= 3.1, intel icc (>= 11.0)
+    c++11 compliant compiler (gcc >= 4.8)
 
 Getting the code
 ----------------
@@ -19,7 +19,7 @@ Once you have met requirements, compiling is simple:
     mkdir build
     cd build
     cmake ..
-    make
+    make install
 
 License
 -------
