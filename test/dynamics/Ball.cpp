@@ -38,7 +38,12 @@ namespace bg = boost::geometry;
 
 using namespace vle::extension::mas;
 
-namespace mas { namespace test { namespace dynamics {
+namespace mas
+{
+namespace test
+{
+namespace dynamics
+{
 
 class Ball : public ActiveAgent
 {
@@ -47,34 +52,30 @@ public:
         : ActiveAgent(init, events)
     {
         mmDirectionChanged = true;
-        mPosition.x( (events.exist("x"))
-            ? events.getDouble("x") : -1);
+        mPosition.x((events.exist("x")) ? events.getDouble("x") : -1);
 
-        mPosition.y( (events.exist("y"))
-            ? events.getDouble("y") : -1);
+        mPosition.y((events.exist("y")) ? events.getDouble("y") : -1);
 
-        mDirection.x( (events.exist("dx"))
-            ? events.getDouble("dx") : -1);
+        mDirection.x((events.exist("dx")) ? events.getDouble("dx") : -1);
 
-        mDirection.y( (events.exist("dy"))
-            ? events.getDouble("dy") : -1);
+        mDirection.y((events.exist("dy")) ? events.getDouble("dy") : -1);
     }
 
     void init() { }
 
     vd::Time init(const vd::Time& time)
     {
-        std::cout << "init ball" << std::endl<< std::flush;
+        std::cout << "init ball" << std::endl << std::flush;
         mLastUpdate = time;
         return 0;
     }
 
     vd::Time timeAdvance() const
     {
-        std::cout << "Time advance ball" << std::endl<< std::flush;
+        std::cout << "Time advance ball" << std::endl << std::flush;
 
-        if (!mScheduler.empty()){
-            return mScheduler.next_event().property("time")->toDouble().value();
+        if (!mScheduler.empty()) {
+            return mScheduler.next_event()["time"]->toDouble().value();
         }
 
         if (mmDirectionChanged)
@@ -86,29 +87,54 @@ public:
     void internalTransition(const vd::Time& time)
     {
         mmDirectionChanged = false;
-        std::cout << "internalTransition ball" << std::endl<< std::flush;
-        if (!mScheduler.empty()){
+        std::cout << "internalTransition ball" << std::endl << std::flush;
+        if (!mScheduler.empty()) {
             double delta_t = time - mLastUpdate;
             Event next_event = mScheduler.next_event();
 
+            mScheduler.remove_next_event();
+
             mPosition.x((mDirection.x() * delta_t) + mPosition.x());
             mPosition.y((mDirection.y() * delta_t) + mPosition.y());
-            std::cout<<"1"<<std::endl;
-            if(next_event.property("type")->toString().value() == "collision"){
-                double n_dx, n_dy;
-                            std::cout<<"2"<<std::endl;
 
-                n_dx = next_event.property("new_dx")->toDouble().value();
-                            std::cout<<"3"<<std::endl;
+            if (next_event["type"]->toString().value() == "collision") {
+                double n_dx = mDirection.x(), n_dy = mDirection.y();
+                bool isInCorner = false;
 
-                n_dy = next_event.property("new_dy")->toDouble().value();
+                for (auto it(mScheduler.cbegin()); it != mScheduler.cend()
+                     ; ++it) {
+                    if (it->property("time")->toDouble().value() <= next_event["time"]->toDouble().value()) {
+                        std::cout << "Next_event:" << next_event["time"]->toDouble().value()
+                                  << " it:" << it->property("time")->toDouble().value() << std::endl;
+                        if (it->property("type")->toString().value()
+                            == "collision") {
+                            isInCorner = true;
+                        }
+                    }
+                }
+
+                if (!isInCorner) {
+                    n_dx = next_event["new_dx"]->toDouble().value();
+                    n_dy = next_event["new_dy"]->toDouble().value();
+                } else {
+                    n_dx *= -1;
+                    n_dy *= -1;
+                }
+
 
                 mDirection.x(n_dx);
                 mDirection.y(n_dy);
                 mmDirectionChanged = true;
             }
+            std::cout << "My position is (received): " << "x:" << next_event.property("new_x")->toDouble().value() << " y:" << next_event.property("new_y")->toDouble().value() <<
+                      " dx:" << mDirection.x() << " dy:" << mDirection.y() << std::endl;
+            std::cout << "My position is (computed): " << "x:" << mPosition.x() << " y:" << mPosition.y() <<
+                      " dx:" << mDirection.x() << " dy:" << mDirection.y() << std::endl;
+            //mScheduler.remove_next_event();
+            while (!mScheduler.empty()) {
+                mScheduler.remove_next_event();
+            }
 
-            mScheduler.remove_next_event();
             mLastUpdate = time;
         }
     }
@@ -116,18 +142,18 @@ public:
     void externalTransition(const vd::ExternalEventList& event,
                             const vd::Time& /*time*/)
     {
-        std::cout << "externalTransition ball" << std::endl<< std::flush;
+        std::cout << "externalTransition ball" << std::endl << std::flush;
 
-        for (size_t i = 0; i < event.size(); ++i){
-            if (event[i]->getPortName() == "perturbs"){
-              Event new_e;
-              new_e.add_property("type", new vv::String("collision"));
+        for (size_t i = 0; i < event.size(); ++i) {
+            if (event[i]->getPortName() == "perturbs") {
+                Event new_e;
+                new_e.add_property("type", new vv::String("collision"));
 
-              for(auto it(event[i]->getAttributes().begin());
-                  it != event[i]->getAttributes().end(); ++it){
+                for (auto it(event[i]->getAttributes().begin());
+                     it != event[i]->getAttributes().end(); ++it) {
                     new_e.add_property(it->first, it->second->clone());
-              }
-              mScheduler.add_event(new_e);
+                }
+                mScheduler.add_event(new_e);
             }
         }
     }
@@ -135,7 +161,7 @@ public:
     void output(const vd::Time& /*time*/,
                 vd::ExternalEventList& output) const
     {
-        if (mmDirectionChanged){
+        if (mmDirectionChanged) {
             vd::ExternalEvent* event = new vd::ExternalEvent("positions");
             event << vd::attribute("x", mPosition.x())
                   << vd::attribute("y", mPosition.y())
@@ -164,5 +190,7 @@ private:
     bg::model::d2::point_xy<double> mDirection;
 };
 
-}}} // namespace vle example
+}
+}
+} // namespace vle example
 DECLARE_DYNAMICS(mas::test::dynamics::Ball)

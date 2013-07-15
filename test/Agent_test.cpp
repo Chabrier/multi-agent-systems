@@ -17,9 +17,8 @@ namespace vd = vle::devs;
 namespace vemas = vle::extension::mas;
 
 
-struct A{
-    A()
-    {
+struct A {
+    A() {
         //~ BOOST_TEST_MESSAGE( "setup fixture" );
         //~ vle::vpz::AtomicModel model("", 0);
         //~ vd::PackageId packageid;
@@ -27,7 +26,9 @@ struct A{
 //~
         //~ a.reset(new vemas::Agent(dynInit, vle::value::Map()));
     }
-    ~A() { BOOST_TEST_MESSAGE( "teardown fixture" ); }
+    ~A() {
+        BOOST_TEST_MESSAGE("teardown fixture");
+    }
 
     //~ boost::shared_ptr<vemas::Agent> a;
 };

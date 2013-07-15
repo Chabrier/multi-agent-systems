@@ -1,8 +1,11 @@
 #include <vle/extension/mas/PassiveAgent.hpp>
 
-namespace vle {
-namespace extension {
-namespace mas {
+namespace vle
+{
+namespace extension
+{
+namespace mas
+{
 
 vd::Time PassiveAgent::init(const vd::Time& time)
 {
@@ -25,11 +28,11 @@ vd::Time PassiveAgent::timeAdvance() const
 
 void PassiveAgent::output(const vd::Time&, vd::ExternalEventList& output) const
 {
-    for(auto itE(mEventsToSend.cbegin());itE != mEventsToSend.end(); ++itE) {
+    for (auto itE(mEventsToSend.cbegin()); itE != mEventsToSend.end(); ++itE) {
         vd::ExternalEvent* event = new vd::ExternalEvent(mOutputPortName);
 
-        for(auto itP(itE->properties_cbegin());itP != itE->properties_cend();
-        ++itP){
+        for (auto itP(itE->properties_cbegin()); itP != itE->properties_cend();
+             ++itP) {
             vv::Value *v = itE->property(itP->first).get()->clone();
             event << vd::attribute(itP->first, v);
         }
@@ -38,13 +41,13 @@ void PassiveAgent::output(const vd::Time&, vd::ExternalEventList& output) const
 }
 
 void PassiveAgent::externalTransition(const vd::ExternalEventList& event,
-                        const vd::Time&)
+                                      const vd::Time&)
 {
-    for(auto itE(event.cbegin());itE != event.cend(); ++itE){
-        if((*itE)->getPortName() == mInputPortName){
+    for (auto itE(event.cbegin()); itE != event.cend(); ++itE) {
+        if ((*itE)->getPortName() == mInputPortName) {
             Event::property_map parameters;
-            for(auto it((*itE)->getAttributes().begin());
-              it != (*itE)->getAttributes().end(); ++it){
+            for (auto it((*itE)->getAttributes().begin());
+                 it != (*itE)->getAttributes().end(); ++it) {
                 parameters.insert(
                     std::make_pair(
                         it->first,
@@ -55,4 +58,6 @@ void PassiveAgent::externalTransition(const vd::ExternalEventList& event,
     }
 }
 
-}}} // namespace vle extension mas
+}
+}
+} // namespace vle extension mas

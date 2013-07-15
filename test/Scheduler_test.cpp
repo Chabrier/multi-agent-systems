@@ -8,17 +8,18 @@
 #include <vle/extension/mas/Scheduler.hpp>
 
 namespace vemas = vle::extension::mas;
-struct A{
-    A()
-    {
-        BOOST_TEST_MESSAGE( "setup fixture" );
+struct A {
+    A() {
+        BOOST_TEST_MESSAGE("setup fixture");
     }
-    ~A() { BOOST_TEST_MESSAGE( "teardown fixture" ); }
+    ~A() {
+        BOOST_TEST_MESSAGE("teardown fixture");
+    }
 
     vemas::Scheduler<int> s;
 };
 
-BOOST_FIXTURE_TEST_SUITE( heap_test, A)
+BOOST_FIXTURE_TEST_SUITE(heap_test, A)
 BOOST_AUTO_TEST_CASE(sort_test)
 {
     s.add_event(999);
@@ -46,20 +47,20 @@ BOOST_AUTO_TEST_CASE(sort_test)
 
 BOOST_AUTO_TEST_CASE(empty_heap_test)
 {
-    if(!s.empty())
+    if (!s.empty())
         BOOST_FAIL("empty() must return false!");
 
-    try{
+    try {
         s.next_event();
         BOOST_FAIL("Exception must be raised..");
-    }catch(const std::exception& e){
+    } catch (const std::exception& e) {
         BOOST_TEST_MESSAGE("Exception successfully catched : ");
     }
 
-    try{
+    try {
         s.remove_next_event();
         BOOST_FAIL("Exception must be raised..");
-    }catch(const std::exception& e){
+    } catch (const std::exception& e) {
         BOOST_TEST_MESSAGE("Exception successfully catched : ");
     }
 }

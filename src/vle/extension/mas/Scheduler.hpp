@@ -30,23 +30,33 @@
 using namespace boost;
 using namespace std;
 
-namespace vle {
-namespace extension {
-namespace mas {
+namespace vle
+{
+namespace extension
+{
+namespace mas
+{
 
-template <class T>
+template <typename T>
 class Scheduler
 {
 public:
+    typedef typename heap::fibonacci_heap<T, heap::compare<std::greater<T> > >
+    Heap;
+    typedef typename Heap::iterator iterator;
+    typedef typename Heap::const_iterator const_iterator;
+
     /* Modifiers */
     /** @brief Add element*/
     inline void add_event(const T& t)
-    {mHeap.push(t);}
+    {
+        mHeap.push(t);
+    }
 
     /** @brief Remove minimal element*/
     void remove_next_event()
     {
-        if(mHeap.empty())
+        if (mHeap.empty())
             throw out_of_range("Scheduler is empty");
         mHeap.pop();
 
@@ -56,34 +66,35 @@ public:
     /** @brief Check if scheduler is empty
      *  @return boolean true if empty, false otherwise*/
     inline bool empty()const
-    {return mHeap.empty();}
+    {
+        return mHeap.empty();
+    }
 
     /** @brief Get number of elements
      *  @return size_t number of elements*/
     inline size_t size() const
-    {return mHeap.size();}
+    {
+        return mHeap.size();
+    }
 
     /* Element access */
     /** @brief Get next elements of scheduler */
     const T& next_event() const
     {
-        if(mHeap.empty())
+        if (mHeap.empty())
             throw out_of_range("Scheduler is empty");
         return mHeap.top();
     }
 
-    //~ T next_event()
-    //~ {
-        //~ if(mHeap.empty())
-            //~ throw out_of_range("Scheduler is empty");
-        //~ return mHeap.top();
-    //~ }
+    const_iterator cbegin() {return mHeap.begin();}
+    const_iterator cend() {return mHeap.end();}
 protected:
 private:
-    heap::fibonacci_heap<T,
-        heap::compare<std::greater<T>>> mHeap;
+    Heap mHeap;
 };
 
-}}}// namespace vle extension mas
+}
+}
+}// namespace vle extension mas
 
 #endif

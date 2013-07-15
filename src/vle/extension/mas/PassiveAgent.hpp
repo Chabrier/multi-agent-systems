@@ -33,16 +33,19 @@
 namespace vd = vle::devs;
 namespace vv = vle::value;
 
-namespace vle {
-namespace extension {
-namespace mas {
+namespace vle
+{
+namespace extension
+{
+namespace mas
+{
 
 class PassiveAgent : public Agent, public vd::Dynamics
 {
 public:
     PassiveAgent(const vd::DynamicsInit &init, const vd::InitEventList &events)
-    :vd::Dynamics(init, events),mOutputPortName("agent_output")
-    ,mInputPortName("positions")
+        : vd::Dynamics(init, events), mOutputPortName("agent_output")
+        , mInputPortName("agent_input")
     {}
 
     virtual void init() = 0;
@@ -60,5 +63,7 @@ protected:
     std::string mInputPortName;
 };
 
-}}}// namespace vle extension mas
+}
+}
+}// namespace vle extension mas
 #endif

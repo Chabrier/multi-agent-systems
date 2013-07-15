@@ -37,46 +37,63 @@ using namespace boost::numeric;
 
 namespace vv = vle::value;
 
-namespace vle {
-namespace extension {
-namespace mas {
+namespace vle
+{
+namespace extension
+{
+namespace mas
+{
 
 class Event
 {
 public:
-    typedef std::map<std::string,std::shared_ptr<vv::Value>> property_map;
-    Event():Event(0){}
-    Event(double t){add_property("time", new vv::Double(t));}
+    typedef std::map<std::string, std::shared_ptr<vv::Value>> property_map;
+    Event(): Event(0) {}
+    Event(double t)
+    {
+        add_property("time", new vv::Double(t));
+    }
 
     std::shared_ptr<vv::Value> property(const std::string& title)const
-    { return mProperties.at(title); }
+    {
+        return mProperties.at(title);
+    }
 
     bool exist_property(const std::string &title)const
-    { return (mProperties.find(title) != mProperties.end()); }
+    {
+        return (mProperties.find(title) != mProperties.end());
+    }
 
-    void add_property(const std::string &t, vv::Value *&&v)
+    void add_property(const std::string &t, vv::Value * && v)
     {
         add_property(t, std::shared_ptr<vv::Value>(v));
     }
 
     void add_property(const std::string &t, const std::shared_ptr<vv::Value> &v)
     {
-        if(exist_property(t))
-           mProperties.erase(t);
+        if (exist_property(t))
+            mProperties.erase(t);
         mProperties.insert(std::make_pair(t, v));
     }
 
     property_map::const_iterator properties_cbegin() const
-    { return mProperties.cbegin(); }
+    {
+        return mProperties.cbegin();
+    }
 
     property_map::const_iterator properties_cend() const
-    { return mProperties.cend(); }
+    {
+        return mProperties.cend();
+    }
 
     friend bool operator> (const Event& a, const Event& b);
+    std::shared_ptr<vv::Value> operator[](const std::string&)const;
 protected:
 private:
-    std::map<std::string,std::shared_ptr<vv::Value>> mProperties;
+    std::map<std::string, std::shared_ptr<vv::Value> > mProperties;
 };
 
-}}}// namespace vle extension mas
+}
+}
+}// namespace vle extension mas
 #endif

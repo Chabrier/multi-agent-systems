@@ -35,13 +35,18 @@
 namespace vd = vle::devs;
 namespace vv = vle::value;
 
-namespace vle { namespace extension { namespace mas {
+namespace vle
+{
+namespace extension
+{
+namespace mas
+{
 
 class ActiveAgent : public Agent, public vd::Dynamics
 {
 public:
     ActiveAgent(const vd::DynamicsInit &init, const vd::InitEventList &events)
-    :vd::Dynamics(init, events)
+        : vd::Dynamics(init, events)
     {}
 
     virtual void init() = 0;
@@ -50,5 +55,7 @@ protected:
 private:
 };
 
-}}}
+}
+}
+}
 #endif

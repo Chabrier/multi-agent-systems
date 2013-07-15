@@ -42,7 +42,12 @@ namespace vv = vle::value;
 namespace bg = boost::geometry;
 namespace bn = boost::numeric;
 
-namespace mas { namespace test { namespace dynamics {
+namespace mas
+{
+namespace test
+{
+namespace dynamics
+{
 
 class SimpleWall : public PassiveAgent
 {
@@ -50,17 +55,10 @@ public:
     SimpleWall(const vd::DynamicsInit& init, const vd::InitEventList& events)
         : PassiveAgent(init, events)
     {
-        x1.x( (events.exist("x1"))
-            ? events.getDouble("x1") : -1);
-
-        x2.x( (events.exist("x2"))
-            ? events.getDouble("x2") : -1);
-
-        x1.y( (events.exist("y1"))
-            ? events.getDouble("y1") : -1);
-
-        x2.y( (events.exist("y2"))
-            ? events.getDouble("y2") : -1);
+        x1.x((events.exist("x1")) ? events.getDouble("x1") : -1);
+        x2.x((events.exist("x2")) ? events.getDouble("x2") : -1);
+        x1.y((events.exist("y1")) ? events.getDouble("y1") : -1);
+        x2.y((events.exist("y2")) ? events.getDouble("y2") : -1);
     }
 
     void init() {}
@@ -80,65 +78,74 @@ public:
 
     /* CUSTOM FUNCTIONS */
     void check_collision(bg::model::d2::point_xy<double> xy_ball,
-        bn::ublas::vector<double> v_ball)
+                         bn::ublas::vector<double> v_ball)
     {
-        bn::ublas::vector<double> wall_vect(3), wall_vect2(3), norm_wall(3);
+        bn::ublas::vector<double> wall_vect(2), wall_vect2(2), norm_wall(2);
         bg::model::d2::point_xy<double> xy_collision;
-
-        double A, B, D, H, R, dotprod;
+        double A, B, D, H, R, dotprod, dotprod2;
         wall_vect[0] = x1.x() - x2.x();
         wall_vect[1] = x1.y() - x2.y();
-        wall_vect[2] = 0;
+
         wall_vect2[0] = wall_vect[0];
         wall_vect2[1] = wall_vect[1];
-        wall_vect2[2] = 2;
 
-        // norm_wall = wall_vect * wall_vect2 (produit vectoriel))
-        norm_wall[0]= wall_vect[1]*wall_vect2[2] - wall_vect[2]*wall_vect2[1];
-        norm_wall[1]= wall_vect[2]*wall_vect2[0] - wall_vect[0]*wall_vect2[2];
-        norm_wall[2]= wall_vect[0]*wall_vect2[1] - wall_vect[1]*wall_vect2[0];
+        //Compute normal vector of wall
+        norm_wall[0] = wall_vect[1];
+        norm_wall[1] = -wall_vect[0];
+
+        //reverse normal vector if it is in wrong direction
+        dotprod = norm_wall[0] * (xy_ball.x() - x2.x()) +
+                  norm_wall[1] * (xy_ball.y() - x2.y());
+        if (dotprod <= 0)
+            norm_wall = -1 * norm_wall;
 
         A = norm_wall[0];
         B = norm_wall[1];
 
         H = 0;
-        D = H - (A*x1.x()) - (B*x1.y());
-        H = A*xy_ball.x() + B*xy_ball.y() + D;
+        D = H - (A * x1.x()) - (B * x1.y());
+        H = A * xy_ball.x() + B * xy_ball.y() + D;
         R = H / (norm_wall[0] * v_ball[0] + norm_wall[1] * v_ball[1]);
 
-        xy_collision.x(xy_ball.x() - ( v_ball[0] * R));
-        xy_collision.y(xy_ball.y() - ( v_ball[1] * R));
+        xy_collision.x(xy_ball.x() - (v_ball[0] * R));
+        xy_collision.y(xy_ball.y() - (v_ball[1] * R));
 
-        bn::ublas::vector<double> a(2), b(2);
-        a[0] = x1.x() - xy_collision.x();
-        a[1] = x1.y() - xy_collision.y();
-        b[0] = x2.x() - xy_collision.x();
-        b[1] = x2.y() - xy_collision.y();
-
-        dotprod =  a[0] * b[0] +  a[1] * b[1];
-
-        if (dotprod <= 0){
+        // Ball on wall norm dot prod
+        dotprod =  v_ball[0] * norm_wall[0] +  v_ball[1] * norm_wall[1];
+        // Collision point on wall norm dot prod
+        dotprod2 = (x1.x() - xy_collision.x()) * (x2.x() - xy_collision.x()) +
+                   (x1.y() - xy_collision.y()) * (x2.y() - xy_collision.y());
+        if (dotprod <= 0 && dotprod2 <= 0) {
             double collision_distance, collision_time;
             collision_distance = bg::distance(xy_ball, xy_collision);
             collision_time =  collision_distance / bn::ublas::norm_2(v_ball);
 
-            if(collision_distance > 0){
+            if (collision_distance > 0) {
                 bn::ublas::vector<double> new_vector(2);
                 Event new_collision(collision_time);
 
-                new_vector = compute_new_vector(wall_vect,norm_wall,v_ball);
+                new_vector = compute_new_vector(wall_vect, norm_wall, v_ball);
                 new_collision.add_property("new_dx",
-                    new vv::Double(new_vector[0]));
+                                           new vv::Double(new_vector[0]));
                 new_collision.add_property("new_dy",
-                    new vv::Double(new_vector[1]));
+                                           new vv::Double(new_vector[1]));
+                new_collision.add_property("new_x",
+                                           new vv::Double(xy_collision.x()));
+                new_collision.add_property("new_y",
+                                           new vv::Double(xy_collision.y()));
+                new_collision.add_property("collision_distance",
+                                           new vv::Double(collision_distance));
                 new_collision.add_property("type",
-                    new vv::String("collision"));
+                                           new vv::String("collision"));
                 mEventsToSend.push_back(new_collision);
 
-                std::cout << "New vector : " << new_vector[0]
-                    <<" "<< new_vector[1]<< std::endl;
+                std::cout << "Collision!!!!!!: ";
+                std::cout << "x:" << xy_collision.x() << " y:" << xy_collision.y() <<
+                          " dx:" << new_vector[0] << " dy:" << new_vector[1]
+                          << " time:" << collision_time << " distance:"
+                          << collision_distance << std::endl;
             }
-        }else{
+        } else {
             std::cout << "Pas de collision!!!!!!" << std::endl;
         }
     }
@@ -149,7 +156,7 @@ public:
         const bn::ublas::vector<double>& ball_vect)
     {
         bn::ublas::vector<double> p_vc(2), p_vn(2);
-        bn::ublas::vector<double> wall_vect_unity(3),norm_vect_unit(3);
+        bn::ublas::vector<double> wall_vect_unity(3), norm_vect_unit(3);
         double dotprod;
 
         /* compute unity vectors */
@@ -158,7 +165,7 @@ public:
 
         /* compute dotproduct of direction vector/wall vector */
         dotprod = wall_vect_unity[0] * ball_vect[0]
-            + wall_vect_unity[1] * ball_vect[1];
+                  + wall_vect_unity[1] * ball_vect[1];
 
         /* vector projection */
         p_vc[0] = dotprod * wall_vect_unity[0];
@@ -166,7 +173,7 @@ public:
 
         /* compute dotproduct of direction vector/normal vector */
         dotprod = norm_vect_unit[0] * ball_vect[0]
-            + norm_vect_unit[1] * ball_vect[1];
+                  + norm_vect_unit[1] * ball_vect[1];
 
         /* vector projection + inversing */
         p_vn[0] = -1 * dotprod * norm_vect_unit[0];
@@ -179,6 +186,8 @@ private:
     bg::model::d2::point_xy<double> x1;
     bg::model::d2::point_xy<double> x2;
 };
-}}} // namespace vle example
+}
+}
+} // namespace vle example
 DECLARE_DYNAMICS(mas::test::dynamics::SimpleWall)
 

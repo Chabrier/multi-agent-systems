@@ -33,11 +33,15 @@ using namespace boost;
 namespace vd = vle::devs;
 namespace vv = vle::value;
 
-namespace vle {
-namespace extension {
-namespace mas {
+namespace vle
+{
+namespace extension
+{
+namespace mas
+{
 
-class Agent{
+class Agent
+{
 public:
     virtual void init() = 0;
 protected:
@@ -52,6 +56,8 @@ protected:
     vd::Time mLastUpdate;
 private:
 };
-}}}// namespace vle extension mas
+}
+}
+}// namespace vle extension mas
 
 #endif

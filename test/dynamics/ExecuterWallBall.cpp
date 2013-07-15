@@ -33,7 +33,12 @@ namespace vd = vle::devs;
 namespace vv = vle::value;
 namespace vp = vle::vpz;
 
-namespace mas { namespace test { namespace dynamics {
+namespace mas
+{
+namespace test
+{
+namespace dynamics
+{
 
 class ExecuterWallBall : public vd::Executive
 {
@@ -53,20 +58,22 @@ public:
 
 
         createModelFromClass(
-                       "toto",
-                       "wall");
+            "toto",
+            "wall");
         cond_Mur.setValueToPort("x1", vv::Double(-3));
         cond_Mur.setValueToPort("y1", vv::Double(0));
         cond_Mur.setValueToPort("x2", vv::Double(-3));
         cond_Mur.setValueToPort("y2", vv::Double(20));
 
-        createModelFromClass("toto","walli");
+        createModelFromClass("toto", "walli");
 
 
         return vd::infinity;
     }
 };
 
-}}} // namespace vle example
+}
+}
+} // namespace vle example
 //DECLARE_NAMED_EXECUTIVE(ExecuterWallBall, mas::test::dynamics::ExecuterWallBall)
 DECLARE_EXECUTIVE(mas::test::dynamics::ExecuterWallBall)
