@@ -53,11 +53,8 @@ public:
     {
         mmDirectionChanged = true;
         mPosition.x((events.exist("x")) ? events.getDouble("x") : -1);
-
         mPosition.y((events.exist("y")) ? events.getDouble("y") : -1);
-
         mDirection.x((events.exist("dx")) ? events.getDouble("dx") : -1);
-
         mDirection.y((events.exist("dy")) ? events.getDouble("dy") : -1);
     }
 
@@ -65,15 +62,12 @@ public:
 
     vd::Time init(const vd::Time& time)
     {
-        std::cout << "init ball" << std::endl << std::flush;
         mLastUpdate = time;
         return 0;
     }
 
     vd::Time timeAdvance() const
     {
-        std::cout << "Time advance ball" << std::endl << std::flush;
-
         if (!mScheduler.empty()) {
             return mScheduler.next_event()["time"]->toDouble().value();
         }
@@ -87,7 +81,6 @@ public:
     void internalTransition(const vd::Time& time)
     {
         mmDirectionChanged = false;
-        std::cout << "internalTransition ball" << std::endl << std::flush;
         if (!mScheduler.empty()) {
             double delta_t = time - mLastUpdate;
             Event next_event = mScheduler.next_event();
@@ -104,8 +97,6 @@ public:
                 for (auto event : mScheduler.elements()) {
                     if (event.property("time")->toDouble().value() <=
                         next_event["time"]->toDouble().value()) {
-                        std::cout << "Next_event:" << next_event["time"]->toDouble().value()
-                                  << " it:" << event.property("time")->toDouble().value() << std::endl;
                         if (event.property("type")->toString().value()
                             == "collision") {
                             isInCorner = true;
@@ -126,10 +117,6 @@ public:
                 mDirection.y(n_dy);
                 mmDirectionChanged = true;
             }
-            std::cout << "My position is (received): " << "x:" << next_event.property("new_x")->toDouble().value() << " y:" << next_event.property("new_y")->toDouble().value() <<
-                      " dx:" << mDirection.x() << " dy:" << mDirection.y() << std::endl;
-            std::cout << "My position is (computed): " << "x:" << mPosition.x() << " y:" << mPosition.y() <<
-                      " dx:" << mDirection.x() << " dy:" << mDirection.y() << std::endl;
 
             while (!mScheduler.empty()) {
                 mScheduler.remove_next_event();
@@ -140,10 +127,8 @@ public:
     }
 
     void externalTransition(const vd::ExternalEventList& events,
-                            const vd::Time& /*time*/)
+                            const vd::Time&)
     {
-        std::cout << "externalTransition ball" << std::endl << std::flush;
-
         for (auto event : events) {
             if (event->getPortName() == "perturbs") {
                 Event new_e;
@@ -158,7 +143,7 @@ public:
         }
     }
 
-    void output(const vd::Time& /*time*/,
+    void output(const vd::Time&,
                 vd::ExternalEventList& output) const
     {
         if (mmDirectionChanged) {

@@ -138,15 +138,7 @@ public:
                 new_collision.add_property("type",
                                            new vv::String("collision"));
                 mEventsToSend.push_back(new_collision);
-
-                std::cout << "Collision!!!!!!: ";
-                std::cout << "x:" << xy_collision.x() << " y:" << xy_collision.y() <<
-                          " dx:" << new_vector[0] << " dy:" << new_vector[1]
-                          << " time:" << collision_time << " distance:"
-                          << collision_distance << std::endl;
             }
-        } else {
-            std::cout << "Pas de collision!!!!!!" << std::endl;
         }
     }
 
