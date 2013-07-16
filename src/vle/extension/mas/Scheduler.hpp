@@ -42,7 +42,7 @@ class Scheduler
 {
 public:
     typedef typename heap::fibonacci_heap<T, heap::compare<std::greater<T> > >
-    Heap;
+                     Heap;
 
     /* Modifiers */
     /** @brief Add element*/

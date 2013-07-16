@@ -47,14 +47,15 @@ namespace mas
 class Event
 {
 public:
-    typedef std::map<std::string, std::shared_ptr<vv::Value>> property_map;
+    typedef std::shared_ptr<vv::Value> value_ptr;
+    typedef std::map<std::string, value_ptr> property_map;
     Event(): Event(0) {}
     Event(double t)
     {
         add_property("time", new vv::Double(t));
     }
 
-    std::shared_ptr<vv::Value> property(const std::string& title)const
+    value_ptr property(const std::string& title)const
     {
         return mProperties.at(title);
     }
@@ -66,26 +67,26 @@ public:
 
     void add_property(const std::string &t, vv::Value * && v)
     {
-        add_property(t, std::shared_ptr<vv::Value>(v));
+        add_property(t, value_ptr(v));
     }
 
-    void add_property(const std::string &t, const std::shared_ptr<vv::Value> &v)
+    void add_property(const std::string &t, const value_ptr &v)
     {
         if (exist_property(t))
             mProperties.erase(t);
         mProperties.insert(std::make_pair(t, v));
     }
 
-    const std::map<std::string, std::shared_ptr<vv::Value> >& properties() const
+    const property_map& properties() const
     {
         return mProperties;
     }
 
     friend bool operator> (const Event& a, const Event& b);
-    std::shared_ptr<vv::Value> operator[](const std::string&)const;
+    value_ptr operator[](const std::string&)const;
 protected:
 private:
-    std::map<std::string, std::shared_ptr<vv::Value> > mProperties;
+    property_map mProperties;
 };
 
 }
