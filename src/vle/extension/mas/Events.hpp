@@ -55,10 +55,7 @@ public:
         add_property("time", new vv::Double(t));
     }
 
-    value_ptr property(const std::string& title)const
-    {
-        return mProperties.at(title);
-    }
+    value_ptr property(const std::string& p)const;
 
     bool exist_property(const std::string &title)const
     {
