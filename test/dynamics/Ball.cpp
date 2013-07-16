@@ -130,7 +130,7 @@ public:
                             const vd::Time&)
     {
         for (auto event : events) {
-            if (event->getPortName() == "perturbs") {
+            if (event->getPortName() == "agent_input") {
                 Event new_e;
                 new_e.add_property("type", new vv::String("collision"));
 
@@ -147,7 +147,7 @@ public:
                 vd::ExternalEventList& output) const
     {
         if (mmDirectionChanged) {
-            vd::ExternalEvent* event = new vd::ExternalEvent("positions");
+            vd::ExternalEvent* event = new vd::ExternalEvent("agent_output");
             event << vd::attribute("x", mPosition.x())
                   << vd::attribute("y", mPosition.y())
                   << vd::attribute("dx", mDirection.x())
