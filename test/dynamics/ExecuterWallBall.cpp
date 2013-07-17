@@ -65,8 +65,15 @@ public:
 
     vd::Time init(const vd::Time&)
     {
-        createWall(1., 0., 1., 10.);
-        createBall(0., 0., 1., 1.);
+        createWall(0, 0, 0, 4);
+        createWall(0, 4, 10, 4);
+        createWall(10, 0, 10, 4);
+        createWall(0, 0, 10, 0);
+        createWall(7, 1, 7, 3);
+        createBall(1, 1, 1, 1);
+
+        for (auto it : mModels)
+            std::cout << it << std::endl;
 
         return vd::infinity;
     }
@@ -84,14 +91,13 @@ public:
         wall_cond.addValueToPort("y1", vv::Double::create(y1));
         wall_cond.addValueToPort("x2", vv::Double::create(x2));
         wall_cond.addValueToPort("y2", vv::Double::create(y2));
-
         conditions().add(wall_cond);
 
         createModel("wall" + id,
                     Strings({"agent_input"}),
                     Strings({"agent_output"}),
                     "dyn_wall",
-                    Strings({"wall_cond" + id}),
+                    Strings({wall_cond.name()}),
                     "");
         connect("wall" + id);
         mModels.push_back("wall" + id);

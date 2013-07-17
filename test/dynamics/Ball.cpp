@@ -95,7 +95,7 @@ public:
                 bool isInCorner = false;
 
                 for (auto event : mScheduler.elements()) {
-                    if (event.property("time")->toDouble().value() <=
+                    if (event.property("time")->toDouble().value() ==
                         next_event["time"]->toDouble().value()) {
                         if (event.property("type")->toString().value()
                             == "collision") {
