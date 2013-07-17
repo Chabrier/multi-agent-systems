@@ -138,7 +138,8 @@ public:
                     new_e.add_property(attribute.first,
                                        attribute.second->clone());
                 }
-                mScheduler.add_event(new_e);
+                if(new_e.property("type")->toString().value() == "collision")
+                    mScheduler.add_event(new_e);
             }
         }
     }
@@ -151,7 +152,8 @@ public:
             event << vd::attribute("x", mPosition.x())
                   << vd::attribute("y", mPosition.y())
                   << vd::attribute("dx", mDirection.x())
-                  << vd::attribute("dy", mDirection.y());
+                  << vd::attribute("dy", mDirection.y())
+                  << vd::attribute("type", "ball_position");
             output.push_back(event);
         }
     }

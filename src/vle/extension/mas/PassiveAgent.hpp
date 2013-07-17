@@ -27,6 +27,7 @@
 #define PASSIVEAGENT_HPP
 
 #include <vle/extension/mas/Agent.hpp>
+#include <vle/extension/mas/Events.hpp>
 #include <vle/devs/Time.hpp>
 #include <vle/devs/Dynamics.hpp>
 
@@ -49,7 +50,7 @@ public:
     {}
 
     virtual void init() = 0;
-    virtual void handleEvent(Event::property_map&) = 0;
+    virtual void handleEvent(Event&) = 0;
 
     /* vle::devs::Dynamics override */
     virtual vd::Time init(const vd::Time& time);

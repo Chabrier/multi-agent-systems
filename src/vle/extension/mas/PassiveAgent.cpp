@@ -44,12 +44,11 @@ void PassiveAgent::externalTransition(const vd::ExternalEventList& events,
 {
     for (auto event : events) {
         if (event->getPortName() == mInputPortName) {
-            Event::property_map parameters;
+            Event parameters;
             for (auto attribute : event->getAttributes()) {
-                parameters.insert(
-                    std::make_pair(
-                        attribute.first,
-                        std::shared_ptr<vv::Value>(attribute.second->clone())));
+                parameters.add_property(
+                                   attribute.first,
+                                   Event::value_ptr(attribute.second->clone()));
             }
             handleEvent(parameters);
         }

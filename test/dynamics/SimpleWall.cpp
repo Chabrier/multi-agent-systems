@@ -63,17 +63,19 @@ public:
 
     void init() {}
 
-    void handleEvent(Event::property_map& properties)
+    void handleEvent(Event& event)
     {
-        bg::model::d2::point_xy<double> xy_ball;//Ball position
-        bn::ublas::vector<double> v_ball(2);//Ball direction vector
+        if (event.property("type")->toString().value() == "ball_position") {
+            bg::model::d2::point_xy<double> xy_ball;//Ball position
+            bn::ublas::vector<double> v_ball(2);//Ball direction vector
 
-        xy_ball.x(properties.at("x")->toDouble().value());
-        xy_ball.y(properties.at("y")->toDouble().value());
-        v_ball[0] = (properties.at("dx")->toDouble().value());
-        v_ball[1] = (properties.at("dy")->toDouble().value());
+            xy_ball.x(event.property("x")->toDouble().value());
+            xy_ball.y(event.property("y")->toDouble().value());
+            v_ball[0] = (event.property("dx")->toDouble().value());
+            v_ball[1] = (event.property("dy")->toDouble().value());
 
-        check_collision(xy_ball, v_ball);
+            check_collision(xy_ball, v_ball);
+        }
     }
 
     /* CUSTOM FUNCTIONS */
