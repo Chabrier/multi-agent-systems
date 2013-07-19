@@ -84,7 +84,7 @@ public:
     {
         bn::ublas::vector<double> wall_vect(2), wall_vect2(2), norm_wall(2);
         bg::model::d2::point_xy<double> xy_collision;
-        double A, B, D, H, R, dotprod, dotprod2;
+        double dotprod, dotprod2;
         wall_vect[0] = x1.x() - x2.x();
         wall_vect[1] = x1.y() - x2.y();
 
@@ -101,16 +101,33 @@ public:
         if (dotprod <= 0)
             norm_wall = -1 * norm_wall;
 
-        A = norm_wall[0];
-        B = norm_wall[1];
+        {
+            // [A1 B1;A2 B2][x;y] = [C1;C2]
+            ublas::matrix<double> AB(2,2);
+            ublas::vector<double> C(2);
+            bg::model::d2::point_xy<double> ball_point;
+            double x, y, det;
 
-        H = 0;
-        D = H - (A * x1.x()) - (B * x1.y());
-        H = A * xy_ball.x() + B * xy_ball.y() + D;
-        R = H / (norm_wall[0] * v_ball[0] + norm_wall[1] * v_ball[1]);
+            ball_point.x(xy_ball.x() + v_ball(0));
+            ball_point.y(xy_ball.y() + v_ball(1));
 
-        xy_collision.x(xy_ball.x() - (v_ball[0] * R));
-        xy_collision.y(xy_ball.y() - (v_ball[1] * R));
+            AB(0,0) = x2.y() - x1.y();
+            AB(0,1) = x1.x() - x2.x();
+            C(0) = AB(0,0) * x1.x() + AB(0,1) * x1.y();
+
+            AB(1,0) = xy_ball.y() - ball_point.y();
+            AB(1,1) = ball_point.x() - xy_ball.x();
+            C(1) = AB(1,0) * ball_point.x() + AB(1,1) * ball_point.y();
+
+            det = AB(0,0)*AB(1,1) - AB(1,0)*AB(0,1);
+            if(det != 0) {
+                //[x;y] = [A1 B1;A2 B2]^(-1)[C1;C2]
+                x =  (C(0)*AB(1,1) - C(1)*AB(0,1)) / det;
+                y = (C(1)*AB(0,0) - C(0)*AB(1,0)) / det;
+                xy_collision.x(x);
+                xy_collision.y(y);
+            }
+        }
 
         // Ball on wall norm dot prod
         dotprod =  v_ball[0] * norm_wall[0] +  v_ball[1] * norm_wall[1];
