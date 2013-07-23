@@ -64,7 +64,5 @@ protected:
     std::string mInputPortName;
 };
 
-}
-}
-}// namespace vle extension mas
+}}}// namespace vle extension mas
 #endif

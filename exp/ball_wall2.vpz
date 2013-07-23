@@ -14,7 +14,7 @@
 <dynamics>
 <dynamic name="dyn_exe" library="ExecuterWallBall" package="vle.extension.mas"  />
 </dynamics>
-<experiment name="exp" duration="100.000000000000000" begin="0.000000000000000" combination="linear"  >
+<experiment name="exp" duration="10000.000000000000000" begin="0.000000000000000" combination="linear"  >
 <views>
 <outputs>
 <output name="view1" location="/home/rphelipot/Documents/MAS/projet/vle.extension.mas/output" format="local" package="vle.output"  plugin="file" >

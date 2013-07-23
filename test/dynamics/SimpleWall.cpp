@@ -84,7 +84,8 @@ public:
                                                                 x2,
                                                                 xy_ball,
                                                                 v_ball);
-            if(collision && inSegment(x1,x2,collision_pt)) {
+            if(collision && between(x1,x2,collision_pt) &&
+               (!inSegment(x1, x2, xy_ball) || !between(x1,x2,collision_pt))) {
                 vector direction(2);
                 double distance, time;
 

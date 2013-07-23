@@ -105,7 +105,7 @@ vector new_direction(point w1,point w2,point ball,vector ball_v)
     return p_vc + p_vn;
 }
 
-bool inSegment(point w1,point w2,point c1)
+bool between(point w1,point w2,point c1)
 {
     vector c1_w1(2), c1_w2(2);
     double dot_prod;
@@ -118,6 +118,21 @@ bool inSegment(point w1,point w2,point c1)
     dot_prod = c1_w1(0)*c1_w2(0) + c1_w1(1)*c1_w2(1);
 
     return dot_prod <= 0;
+}
+
+bool inSegment(point w1,point w2,point c1)
+{
+    vector w1_c1(2), w1_w2(2);
+    double det;
+    w1_c1(0) = c1.x() - w1.x();
+    w1_c1(1) = c1.y() - w1.y();
+
+    w1_w2(0) = w2.x() - w1.x();
+    w1_w2(1) = w2.y() - w1.y();
+
+    det = w1_c1(0)*w1_w2(1) - w1_w2(0)*w1_c1(1);
+
+    return det == 0;
 }
 
 }}} // namespace vle extension mas
