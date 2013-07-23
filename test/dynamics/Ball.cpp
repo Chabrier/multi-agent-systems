@@ -82,39 +82,37 @@ public:
     {
         mmDirectionChanged = false;
         if (!mScheduler.empty()) {
-            double delta_t = time - mLastUpdate;
             Event next_event = mScheduler.next_event();
-
             mScheduler.remove_next_event();
 
-            mPosition.x((mDirection.x() * delta_t) + mPosition.x());
-            mPosition.y((mDirection.y() * delta_t) + mPosition.y());
-
             if (next_event["type"]->toString().value() == "collision") {
-                double n_dx = mDirection.x(), n_dy = mDirection.y();
-                bool isInCorner = false;
+                bool corner = false;
 
-                for (auto event : mScheduler.elements()) {
-                    if (event.property("time")->toDouble().value() ==
-                        next_event["time"]->toDouble().value()) {
-                        if (event.property("type")->toString().value()
-                            == "collision") {
-                            isInCorner = true;
-                        }
-                    }
+                if (!mScheduler.empty()) {
+                    Event next_event2 = mScheduler.next_event();
+
+                    if((next_event["new_x"]->toDouble().value()
+                       == next_event2["new_x"]->toDouble().value())
+                       &&(next_event["new_y"]->toDouble().value()
+                       == next_event2["new_y"]->toDouble().value()))
+                       corner = true;
+                    else if(next_event["collision_distance"]->toDouble().value()
+                            == next_event2["collision_distance"]->toDouble().value())
+                        corner = true;
+                    else if(next_event["time"]->toDouble().value()
+                            == next_event2["time"]->toDouble().value())
+                        corner = true;
                 }
 
-                if (!isInCorner) {
-                    n_dx = next_event["new_dx"]->toDouble().value();
-                    n_dy = next_event["new_dy"]->toDouble().value();
+                mPosition.x(next_event["new_x"]->toDouble().value());
+                mPosition.y(next_event["new_y"]->toDouble().value());
+                if (!corner) {
+                    mDirection.x(next_event["new_dx"]->toDouble().value());
+                    mDirection.y(next_event["new_dy"]->toDouble().value());
                 } else {
-                    n_dx *= -1;
-                    n_dy *= -1;
+                    mDirection.x(mDirection.x() * -1);
+                    mDirection.y(mDirection.y() * -1);
                 }
-
-
-                mDirection.x(n_dx);
-                mDirection.y(n_dy);
                 mmDirectionChanged = true;
             }
 
