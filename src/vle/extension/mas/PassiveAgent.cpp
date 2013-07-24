@@ -10,11 +10,13 @@ namespace mas
 vd::Time PassiveAgent::init(const vd::Time& time)
 {
     mLastUpdate = time;
+    mCurrentTime = time;
     return vd::infinity;
 }
 
-void PassiveAgent::internalTransition(const vd::Time&)
+void PassiveAgent::internalTransition(const vd::Time& time)
 {
+    mCurrentTime = time;
     mEventsToSend.clear();
 }
 
@@ -40,8 +42,9 @@ void PassiveAgent::output(const vd::Time&, vd::ExternalEventList& output) const
 }
 
 void PassiveAgent::externalTransition(const vd::ExternalEventList& events,
-                                      const vd::Time&)
+                                      const vd::Time& time)
 {
+    mCurrentTime = time;
     for (auto event : events) {
         if (event->getPortName() == mInputPortName) {
             Event parameters;

@@ -63,13 +63,15 @@ public:
     vd::Time init(const vd::Time& time)
     {
         mLastUpdate = time;
+        mCurrentTime = time;
         return 0;
     }
 
     vd::Time timeAdvance() const
     {
         if (!mScheduler.empty()) {
-            return mScheduler.next_event()["time"]->toDouble().value();
+            return mScheduler.next_event()["time"]->toDouble().value()
+                   - mCurrentTime;
         }
 
         if (mmDirectionChanged)
@@ -80,6 +82,7 @@ public:
 
     void internalTransition(const vd::Time& time)
     {
+        mCurrentTime = time;
         mmDirectionChanged = false;
         if (!mScheduler.empty()) {
             Event next_event = mScheduler.next_event();
@@ -125,8 +128,9 @@ public:
     }
 
     void externalTransition(const vd::ExternalEventList& events,
-                            const vd::Time&)
+                            const vd::Time& time)
     {
+        mCurrentTime = time;
         for (auto event : events) {
             if (event->getPortName() == "agent_input") {
                 Event new_e;
@@ -173,6 +177,7 @@ private:
     bool mmDirectionChanged;
     bg::model::d2::point_xy<double> mPosition;
     bg::model::d2::point_xy<double> mDirection;
+    vd::Time mCurrentTime;
 };
 
 }

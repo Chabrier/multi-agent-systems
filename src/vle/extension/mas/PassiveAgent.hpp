@@ -62,6 +62,7 @@ public:
 protected:
     std::string mOutputPortName;
     std::string mInputPortName;
+    vd::Time mCurrentTime;
 };
 
 }}}// namespace vle extension mas

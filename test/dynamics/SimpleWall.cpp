@@ -93,7 +93,8 @@ public:
                 time = distance / bn::ublas::norm_2(v_ball);
                 if(distance > 0) {
                     direction = new_direction(x1,x2,xy_ball,v_ball);
-                    sendCollisionEvent(collision_pt,direction,distance,time);
+                    sendCollisionEvent(collision_pt,direction,
+                                       distance,time+mCurrentTime);
                 }
             }
         }
