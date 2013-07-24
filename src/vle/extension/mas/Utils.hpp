@@ -45,6 +45,6 @@ std::tuple<bool,point> collision_point(point,point,point,vector);
 vector new_direction(point,point,point,vector);
 bool between(point,point,point);
 bool inSegment(point,point,point);
-
+bool collinear(vector,vector);
 }}} // namespace vle extension mas
 #endif

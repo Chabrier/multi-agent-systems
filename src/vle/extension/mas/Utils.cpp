@@ -123,16 +123,18 @@ bool between(point w1,point w2,point c1)
 bool inSegment(point w1,point w2,point c1)
 {
     vector w1_c1(2), w1_w2(2);
-    double det;
     w1_c1(0) = c1.x() - w1.x();
     w1_c1(1) = c1.y() - w1.y();
 
     w1_w2(0) = w2.x() - w1.x();
     w1_w2(1) = w2.y() - w1.y();
 
-    det = w1_c1(0)*w1_w2(1) - w1_w2(0)*w1_c1(1);
+    return collinear(w1_c1,w1_w2);
+}
 
-    return det == 0;
+bool collinear(vector v1,vector v2)
+{
+    return v1(0)*v2(1) - v2(0)*v1(1) == 0;
 }
 
 }}} // namespace vle extension mas
