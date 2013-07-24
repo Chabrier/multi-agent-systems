@@ -88,13 +88,15 @@ public:
                (!inSegment(x1, x2, xy_ball) || !between(x1,x2,collision_pt))) {
                 vector direction(2);
                 double distance, time;
+                std::string ball_name;
 
                 distance = bg::distance(xy_ball, collision_pt);
                 time = distance / bn::ublas::norm_2(v_ball);
+                ball_name = event.property("from")->toString().value();
                 if(distance > 0) {
                     direction = new_direction(x1,x2,xy_ball,v_ball);
                     sendCollisionEvent(collision_pt,direction,
-                                       distance,time+mCurrentTime);
+                                       distance,time+mCurrentTime,ball_name);
                 }
             }
         }
@@ -103,7 +105,8 @@ public:
     void sendCollisionEvent(point xy_collision,
                             vector new_vector,
                             double collision_distance,
-                            double collision_time)
+                            double collision_time,
+                            const std::string& ball_name)
     {
         Event new_collision(collision_time);
 
@@ -119,6 +122,7 @@ public:
                                    new vv::Double(collision_distance));
         new_collision.add_property("type",
                                    new vv::String("collision"));
+        new_collision.add_property("to",new vv::String(ball_name));
         mEventsToSend.push_back(new_collision);
     }
 

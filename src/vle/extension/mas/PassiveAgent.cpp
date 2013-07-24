@@ -37,6 +37,7 @@ void PassiveAgent::output(const vd::Time&, vd::ExternalEventList& output) const
             vv::Value *v = eventToSend.property(p_name.first).get()->clone();
             event << vd::attribute(p_name.first, v);
         }
+        event << vd::attribute("from",getModelName());
         output.push_back(event);
     }
 }

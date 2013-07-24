@@ -71,6 +71,8 @@ public:
         createWall(0, 0, 10, 0);
         createWall(7, 1, 7, 3);
         createBall(1, 1, 1, 1);
+        createBall(1, 1, 0, 1);
+        createBall(8, 3, 1, 0);
 
         for (auto it : mModels)
             std::cout << it << std::endl;
