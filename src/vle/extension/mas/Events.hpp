@@ -31,9 +31,6 @@
 #include <vle/value/Double.hpp>
 
 #include <map>
-#include <boost/numeric/ublas/vector.hpp>
-
-using namespace boost::numeric;
 
 namespace vv = vle::value;
 

@@ -27,9 +27,6 @@
 
 #include <boost/heap/fibonacci_heap.hpp>
 
-using namespace boost;
-using namespace std;
-
 namespace vle
 {
 namespace extension
@@ -41,7 +38,8 @@ template <typename T>
 class Scheduler
 {
 public:
-    typedef typename heap::fibonacci_heap<T, heap::compare<std::greater<T> > >
+    typedef typename boost::heap::fibonacci_heap
+                     <T,boost::heap::compare<std::greater<T> > >
                      Heap;
 
     /* Modifiers */
@@ -55,7 +53,7 @@ public:
     void remove_next_event()
     {
         if (mHeap.empty())
-            throw out_of_range("Scheduler is empty");
+            throw std::out_of_range("Scheduler is empty");
         mHeap.pop();
 
     }
@@ -80,7 +78,7 @@ public:
     const T& next_event() const
     {
         if (mHeap.empty())
-            throw out_of_range("Scheduler is empty");
+            throw std::out_of_range("Scheduler is empty");
         return mHeap.top();
     }
 

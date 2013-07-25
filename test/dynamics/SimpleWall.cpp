@@ -50,10 +50,6 @@ namespace test
 namespace dynamics
 {
 
-typedef bg::model::d2::point_xy<double> point;
-typedef bn::ublas::vector<double> vector;
-typedef bn::ublas::matrix<double> matrix;
-
 class SimpleWall : public PassiveAgent
 {
 public:
@@ -71,8 +67,8 @@ public:
     void handleEvent(Event& event)
     {
         if (event.property("type")->toString().value() == "ball_position") {
-            point xy_ball, collision_pt;//Ball position
-            vector v_ball(2);//Ball direction vector
+            point xy_ball, collision_pt; //Ball position
+            vector v_ball(2);            //Ball direction vector
             bool collision = false;
 
             xy_ball.x(event.property("x")->toDouble().value());
@@ -110,25 +106,22 @@ public:
     {
         Event new_collision(collision_time);
 
-        new_collision.add_property("new_dx",
-                                   new vv::Double(new_vector[0]));
-        new_collision.add_property("new_dy",
-                                   new vv::Double(new_vector[1]));
+        new_collision.add_property("new_dx",vv::Double::create(new_vector[0]));
+        new_collision.add_property("new_dy",vv::Double::create(new_vector[1]));
         new_collision.add_property("new_x",
-                                   new vv::Double(xy_collision.x()));
+                                   vv::Double::create(xy_collision.x()));
         new_collision.add_property("new_y",
-                                   new vv::Double(xy_collision.y()));
+                                   vv::Double::create(xy_collision.y()));
         new_collision.add_property("collision_distance",
-                                   new vv::Double(collision_distance));
-        new_collision.add_property("type",
-                                   new vv::String("collision"));
-        new_collision.add_property("to",new vv::String(ball_name));
+                                   vv::Double::create(collision_distance));
+        new_collision.add_property("type",vv::String::create("collision"));
+        new_collision.add_property("to",vv::String::create(ball_name));
         mEventsToSend.push_back(new_collision);
     }
 
 private:
-    bg::model::d2::point_xy<double> x1;
-    bg::model::d2::point_xy<double> x2;
+    point x1;
+    point x2;
 };
 }
 }

@@ -189,11 +189,11 @@ public:
         // Case 1 : collinear vector + on the same line
         // Case 2 : other type of collision
         bool collision = false;
-        bn::ublas::vector<double> my_direction(2);
-        bn::ublas::vector<double> event_ball_direction(2);
-        bn::ublas::vector<double> b_to_b(2);
-        bg::model::d2::point_xy<double> event_ball_position;
-        bg::model::d2::point_xy<double> collision_point;
+        vector my_direction(2);
+        vector event_ball_direction(2);
+        vector b_to_b(2);
+        point event_ball_position;
+        point collision_point;
 
         event_ball_position.x(new_e.property("x")
                               ->toDouble().value());
@@ -243,11 +243,11 @@ public:
         }
     }
 
-    void addCollisionEvent(bg::model::d2::point_xy<double> xy_collision,
-                            bn::ublas::vector<double> new_vector,
-                            double collision_distance,
-                            double collision_time,
-                            const std::string& ball_name)
+    void addCollisionEvent(point xy_collision,
+                           vector new_vector,
+                           double collision_distance,
+                           double collision_time,
+                           const std::string& ball_name)
     {
         Event new_collision(collision_time);
 
@@ -268,8 +268,8 @@ public:
     }
 private:
     bool mmDirectionChanged;
-    bg::model::d2::point_xy<double> mPosition;
-    bg::model::d2::point_xy<double> mDirection;
+    point mPosition;
+    point mDirection;
     vd::Time mCurrentTime;
 };
 

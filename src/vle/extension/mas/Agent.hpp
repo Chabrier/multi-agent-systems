@@ -29,7 +29,6 @@
 #include <vle/extension/mas/Scheduler.hpp>
 #include <vle/extension/mas/Events.hpp>
 
-using namespace boost;
 namespace vd = vle::devs;
 namespace vv = vle::value;
 
