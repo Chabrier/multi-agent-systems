@@ -31,10 +31,12 @@
 
 #include <vle/extension/mas/ActiveAgent.hpp>
 #include <vle/extension/mas/Events.hpp>
+#include <vle/extension/mas/Utils.hpp>
 
 namespace vd = vle::devs;
 namespace vv = vle::value;
 namespace bg = boost::geometry;
+namespace bn = boost::numeric;
 
 using namespace vle::extension::mas;
 
@@ -134,16 +136,21 @@ public:
         for (auto event : events) {
             if (event->getPortName() == "agent_input") {
                 Event new_e;
-                new_e.add_property("type", new vv::String("collision"));
+                std::string type;
 
                 for (auto attribute : event->getAttributes()) {
                     new_e.add_property(attribute.first,
                                        attribute.second->clone());
                 }
-                if(new_e.property("type")->toString().value() == "collision"
+                type = new_e.property("type")->toString().value();
+                if(type == "collision"
                    &&
                    new_e.property("to")->toString().value() == getModelName())
                     mScheduler.add_event(new_e);
+                else if (type == "ball_position") {
+                    ballCollision(new_e);
+
+                }
             }
         }
     }
@@ -176,6 +183,89 @@ public:
         return 0;
     }
 
+    void ballCollision(Event new_e)
+    {
+        // 1. Compute collision with another ball
+        // Case 1 : collinear vector + on the same line
+        // Case 2 : other type of collision
+        bool collision = false;
+        bn::ublas::vector<double> my_direction(2);
+        bn::ublas::vector<double> event_ball_direction(2);
+        bn::ublas::vector<double> b_to_b(2);
+        bg::model::d2::point_xy<double> event_ball_position;
+        bg::model::d2::point_xy<double> collision_point;
+
+        event_ball_position.x(new_e.property("x")
+                              ->toDouble().value());
+        event_ball_position.y(new_e.property("y")
+                              ->toDouble().value());
+
+        my_direction(0) = mDirection.x();
+        my_direction(1) = mDirection.y();
+        event_ball_direction(0) = new_e.property("dx")->toDouble().value();
+        event_ball_direction(1) = new_e.property("dy")->toDouble().value();
+        b_to_b(0) = mPosition.x() - event_ball_position.x();
+        b_to_b(1) = mPosition.y() - event_ball_position.y();
+
+        if(collinear(my_direction,event_ball_direction)) {
+            double dp, dp2;
+            dp = event_ball_direction(0)
+                 *(mPosition.x()-event_ball_position.x())
+                 +event_ball_direction(1)
+                 *(mPosition.y()-event_ball_position.y());
+
+            dp2 = my_direction(0)
+                 *(event_ball_position.x()-mPosition.x())
+                 +my_direction(1)
+                 *(event_ball_position.y()-mPosition.y());
+            if(collinear(my_direction,b_to_b) && dp > 0 && dp2 >0) { // Case 1
+                double R = bn::ublas::norm_2(my_direction) /
+                          (bn::ublas::norm_2(my_direction)+
+                           bn::ublas::norm_2(event_ball_direction));
+                collision_point.x(mPosition.x() + R*b_to_b(0)*-1);
+                collision_point.y(mPosition.y() + R*b_to_b(1)*-1);
+                collision = true;
+            }else{
+                std::cout << "Not collinear" << std::endl;
+            }
+        } else {// Case 2
+            std::cout << "We must compute collisions" << std::endl;
+        }
+        // 2. Add event in scheduler
+        if(collision) {
+            double distance = bg::distance(mPosition, collision_point);
+            double time = distance / bn::ublas::norm_2(my_direction);
+            addCollisionEvent(collision_point,
+                               -1*my_direction,
+                               distance,
+                               time+mCurrentTime,
+                               getModelName());
+        }
+    }
+
+    void addCollisionEvent(bg::model::d2::point_xy<double> xy_collision,
+                            bn::ublas::vector<double> new_vector,
+                            double collision_distance,
+                            double collision_time,
+                            const std::string& ball_name)
+    {
+        Event new_collision(collision_time);
+
+        new_collision.add_property("new_dx",
+                                   new vv::Double(new_vector[0]));
+        new_collision.add_property("new_dy",
+                                   new vv::Double(new_vector[1]));
+        new_collision.add_property("new_x",
+                                   new vv::Double(xy_collision.x()));
+        new_collision.add_property("new_y",
+                                   new vv::Double(xy_collision.y()));
+        new_collision.add_property("collision_distance",
+                                   new vv::Double(collision_distance));
+        new_collision.add_property("type",
+                                   new vv::String("collision"));
+        new_collision.add_property("to",new vv::String(ball_name));
+        mScheduler.add_event(new_collision);
+    }
 private:
     bool mmDirectionChanged;
     bg::model::d2::point_xy<double> mPosition;

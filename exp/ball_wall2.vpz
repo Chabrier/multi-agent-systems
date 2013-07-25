@@ -21,7 +21,7 @@
 <map><key name="julian-day"><boolean>false</boolean></key><key name="locale"><string>C</string></key><key name="type"><string>text</string></key></map></output>
 
 </outputs>
-<view name="view1" output="view1" type="timed" timestep="1.000000000000000" />
+<view name="view1" output="view1" type="timed" timestep="0.500000000000000" />
 
 </views>
 </experiment>

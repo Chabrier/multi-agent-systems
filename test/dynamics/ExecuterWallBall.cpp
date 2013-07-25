@@ -70,9 +70,10 @@ public:
         createWall(10, 0, 10, 4);
         createWall(0, 0, 10, 0);
         createWall(7, 1, 7, 3);
-        createBall(1, 1, 1, 1);
-        createBall(1, 1, 0, 1);
-        createBall(8, 3, 1, 0);
+        //~ createBall(1, 1, 1, 1);
+        //~ createBall(1, 1, 0, 1);
+        createBall(8, 3, 2, 2);
+        createBall(9, 4, -1, -1);
 
         for (auto it : mModels)
             std::cout << it << std::endl;
