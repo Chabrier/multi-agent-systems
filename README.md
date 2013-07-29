@@ -6,7 +6,7 @@ Requirements:
     boost (>= 1.47)
     cmake (>= 2.8.0)
     make (>= 1.8)
-    c++11 compliant compiler (gcc >= 4.8)
+    c++11 compliant compiler (gcc >= 4.8, clang >= 3.4)
 
 Getting the code
 ----------------
