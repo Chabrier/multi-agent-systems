@@ -51,13 +51,13 @@ class Ball : public ActiveAgent
 {
 public:
     Ball(const vd::DynamicsInit& init, const vd::InitEventList& events)
-        : ActiveAgent(init, events)
+        : ActiveAgent(init, events),mDirection(2)
     {
-        mmDirectionChanged = true;
+        mDirectionChanged = true;
         mPosition.x((events.exist("x")) ? events.getDouble("x") : -1);
         mPosition.y((events.exist("y")) ? events.getDouble("y") : -1);
-        mDirection.x((events.exist("dx")) ? events.getDouble("dx") : -1);
-        mDirection.y((events.exist("dy")) ? events.getDouble("dy") : -1);
+        mDirection(0)= (events.exist("dx")) ? events.getDouble("dx") : -1;
+        mDirection(1)= (events.exist("dy")) ? events.getDouble("dy") : -1;
     }
 
     void init() { }
@@ -76,7 +76,7 @@ public:
                    - mCurrentTime;
         }
 
-        if (mmDirectionChanged)
+        if (mDirectionChanged)
             return 0;
 
         return vd::infinity;
@@ -85,7 +85,7 @@ public:
     void internalTransition(const vd::Time& time)
     {
         mCurrentTime = time;
-        mmDirectionChanged = false;
+        mDirectionChanged = false;
         if (!mScheduler.empty()) {
             Event next_event = mScheduler.next_event();
             mScheduler.remove_next_event();
@@ -112,13 +112,12 @@ public:
                 mPosition.x(next_event["new_x"]->toDouble().value());
                 mPosition.y(next_event["new_y"]->toDouble().value());
                 if (!corner) {
-                    mDirection.x(next_event["new_dx"]->toDouble().value());
-                    mDirection.y(next_event["new_dy"]->toDouble().value());
+                    mDirection(0)= next_event["new_dx"]->toDouble().value();
+                    mDirection(1)= next_event["new_dy"]->toDouble().value();
                 } else {
-                    mDirection.x(mDirection.x() * -1);
-                    mDirection.y(mDirection.y() * -1);
+                    mDirection= mDirection * -1;
                 }
-                mmDirectionChanged = true;
+                mDirectionChanged = true;
             }
 
             while (!mScheduler.empty()) {
@@ -158,12 +157,12 @@ public:
     void output(const vd::Time&,
                 vd::ExternalEventList& output) const
     {
-        if (mmDirectionChanged) {
+        if (mDirectionChanged) {
             vd::ExternalEvent* event = new vd::ExternalEvent("agent_output");
             event << vd::attribute("x", mPosition.x())
                   << vd::attribute("y", mPosition.y())
-                  << vd::attribute("dx", mDirection.x())
-                  << vd::attribute("dy", mDirection.y())
+                  << vd::attribute("dx", mDirection(0))
+                  << vd::attribute("dy", mDirection(1))
                   << vd::attribute("from", getModelName())
                   << vd::attribute("type", "ball_position");
             output.push_back(event);
@@ -175,10 +174,10 @@ public:
         vd::Time delta_t = event.getTime() - mLastUpdate;
 
         if (event.onPort("x")) {
-            return new vv::Double((mDirection.x() * delta_t) + mPosition.x());
+            return new vv::Double((mDirection(0) * delta_t) + mPosition.x());
         }
         if (event.onPort("y")) {
-            return new vv::Double((mDirection.y() * delta_t) + mPosition.y());
+            return new vv::Double((mDirection(1) * delta_t) + mPosition.y());
         }
         return 0;
     }
@@ -189,7 +188,6 @@ public:
         // Case 1 : collinear vector + on the same line
         // Case 2 : other type of collision
         bool collision = false;
-        vector my_direction(2);
         vector event_ball_direction(2);
         vector b_to_b(2);
         point event_ball_position;
@@ -200,27 +198,25 @@ public:
         event_ball_position.y(new_e.property("y")
                               ->toDouble().value());
 
-        my_direction(0) = mDirection.x();
-        my_direction(1) = mDirection.y();
         event_ball_direction(0) = new_e.property("dx")->toDouble().value();
         event_ball_direction(1) = new_e.property("dy")->toDouble().value();
         b_to_b(0) = mPosition.x() - event_ball_position.x();
         b_to_b(1) = mPosition.y() - event_ball_position.y();
 
-        if(collinear(my_direction,event_ball_direction)) {
+        if(collinear(mDirection,event_ball_direction)) {
             double dp, dp2;
             dp = event_ball_direction(0)
                  *(mPosition.x()-event_ball_position.x())
                  +event_ball_direction(1)
                  *(mPosition.y()-event_ball_position.y());
 
-            dp2 = my_direction(0)
+            dp2 = mDirection(0)
                  *(event_ball_position.x()-mPosition.x())
-                 +my_direction(1)
+                 +mDirection(1)
                  *(event_ball_position.y()-mPosition.y());
-            if(collinear(my_direction,b_to_b) && dp > 0 && dp2 >0) { // Case 1
-                double R = bn::ublas::norm_2(my_direction) /
-                          (bn::ublas::norm_2(my_direction)+
+            if(collinear(mDirection,b_to_b) && dp > 0 && dp2 >0) { // Case 1
+                double R = bn::ublas::norm_2(mDirection) /
+                          (bn::ublas::norm_2(mDirection)+
                            bn::ublas::norm_2(event_ball_direction));
                 collision_point.x(mPosition.x() + R*b_to_b(0)*-1);
                 collision_point.y(mPosition.y() + R*b_to_b(1)*-1);
@@ -234,9 +230,9 @@ public:
         // 2. Add event in scheduler
         if(collision) {
             double distance = bg::distance(mPosition, collision_point);
-            double time = distance / bn::ublas::norm_2(my_direction);
+            double time = distance / bn::ublas::norm_2(mDirection);
             addCollisionEvent(collision_point,
-                               -1*my_direction,
+                               -1*mDirection,
                                distance,
                                time+mCurrentTime,
                                getModelName());
@@ -267,9 +263,9 @@ public:
         mScheduler.add_event(new_collision);
     }
 private:
-    bool mmDirectionChanged;
+    bool mDirectionChanged;
     point mPosition;
-    point mDirection;
+    vector mDirection;
     vd::Time mCurrentTime;
 };
 
