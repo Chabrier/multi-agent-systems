@@ -41,7 +41,7 @@ typedef bg::model::d2::point_xy<double> point;
 typedef bn::ublas::vector<double> vector;
 typedef bn::ublas::matrix<double> matrix;
 
-std::tuple<bool,point> collision_point(point,point,point,vector);
+std::tuple<bool,point> collision_point(point,point,point,vector,double);
 vector new_direction(point,point,point,vector);
 bool between(point,point,point);
 bool inSegment(point,point,point);

@@ -70,18 +70,20 @@ public:
             point xy_ball, collision_pt; //Ball position
             vector v_ball(2);            //Ball direction vector
             bool collision = false;
+	    double radius;
 
             xy_ball.x(event.property("x")->toDouble().value());
             xy_ball.y(event.property("y")->toDouble().value());
             v_ball[0] = (event.property("dx")->toDouble().value());
             v_ball[1] = (event.property("dy")->toDouble().value());
+	    radius = (event.property("radius")->toDouble().value());
 
             std::tie(collision, collision_pt) = collision_point(x1,
                                                                 x2,
                                                                 xy_ball,
-                                                                v_ball);
-            if(collision && between(x1,x2,collision_pt) &&
-               (!inSegment(x1, x2, xy_ball) || !between(x1,x2,collision_pt))) {
+                                                                v_ball,
+								radius);
+            if(collision) {
                 vector direction(2);
                 double distance, time;
                 std::string ball_name;

@@ -72,11 +72,8 @@ public:
         createWall(7, 1, 7, 3);
         //~ createBall(1, 1, 1, 1);
         //~ createBall(1, 1, 0, 1);
-        createBall(1, 1, 1, 1);
-        createBall(2, 1, -1, 1);
-
-        for (auto it : mModels)
-            std::cout << it << std::endl;
+        //createBall(1, 1, -1, -1, 0.5);
+        createBall(1, 1, -1, -1, 0.25);
 
         return vd::infinity;
     }
@@ -107,7 +104,7 @@ public:
         ++mWallNumbers;
     }
 
-    void createBall(double x, double y, double dx, double dy)
+    void createBall(double x, double y, double dx, double dy, double radius)
     {
         std::string id = boost::lexical_cast<std::string>(mBallNumbers);
 
@@ -117,10 +114,12 @@ public:
         ball_cond.add("y");
         ball_cond.add("dx");
         ball_cond.add("dy");
+        ball_cond.add("radius");
         ball_cond.addValueToPort("x", vv::Double::create(x));
         ball_cond.addValueToPort("y", vv::Double::create(y));
         ball_cond.addValueToPort("dx", vv::Double::create(dx));
         ball_cond.addValueToPort("dy", vv::Double::create(dy));
+        ball_cond.addValueToPort("radius", vv::Double::create(radius));
         conditions().add(ball_cond);
 
         //Create observables

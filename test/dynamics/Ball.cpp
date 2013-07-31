@@ -58,6 +58,7 @@ public:
         mPosition.y((events.exist("y")) ? events.getDouble("y") : -1);
         mDirection(0)= (events.exist("dx")) ? events.getDouble("dx") : -1;
         mDirection(1)= (events.exist("dy")) ? events.getDouble("dy") : -1;
+        mRadius= (events.exist("radius")) ? events.getDouble("radius") : 0;
     }
 
     void init() { }
@@ -164,7 +165,8 @@ public:
                   << vd::attribute("dx", mDirection(0))
                   << vd::attribute("dy", mDirection(1))
                   << vd::attribute("from", getModelName())
-                  << vd::attribute("type", "ball_position");
+                  << vd::attribute("type", "ball_position")
+                  << vd::attribute("radius", mRadius);
             output.push_back(event);
         }
     }
@@ -327,6 +329,7 @@ private:
     point mPosition;
     vector mDirection;
     vd::Time mCurrentTime;
+    double mRadius;
 };
 
 }

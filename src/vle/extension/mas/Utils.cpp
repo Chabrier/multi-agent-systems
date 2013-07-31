@@ -10,7 +10,8 @@ namespace mas
 std::tuple<bool,point> collision_point(point w1,
                                        point w2,
                                        point ball,
-                                       vector ball_v)
+                                       vector ball_v,
+                                       double radius)
 {
     point collision_point;
     vector wall_v(2), wall_norm(2);
@@ -19,6 +20,11 @@ std::tuple<bool,point> collision_point(point w1,
 
     wall_v(0) = w2.x() - w1.x();
     wall_v(1) = w2.y() - w1.y();
+
+    w1.x(w1.x() -(wall_v(0)/bn::ublas::norm_2(wall_v))*radius);
+    w1.y(w1.y() -(wall_v(1)/bn::ublas::norm_2(wall_v))*radius);
+    w2.x(w2.x() +(wall_v(0)/bn::ublas::norm_2(wall_v))*radius);
+    w2.y(w2.y() +(wall_v(1)/bn::ublas::norm_2(wall_v))*radius);
 
     //Compute normal vector of wall
     wall_norm(0) = wall_v(1);
@@ -30,6 +36,8 @@ std::tuple<bool,point> collision_point(point w1,
     if (dot_prod < 0)
         wall_norm = -1 * wall_norm;
 
+    ball.x(ball.x() - radius*(wall_norm(0)/bn::ublas::norm_2(wall_norm)));
+    ball.y(ball.y() - radius*(wall_norm(1)/bn::ublas::norm_2(wall_norm)));
     /* Compute collision point
      * ax + by + c = 0 */
     matrix ab(2,2);
@@ -50,6 +58,10 @@ std::tuple<bool,point> collision_point(point w1,
         double x,y;
         x = (-1*((ab(1,1)*c(0)) - (ab(0,1)*c(1)))) / det;
         y = (-1*((ab(0,0)*c(1)) - (ab(1,0)*c(0)))) / det;
+
+	x = x + radius*(wall_norm(0)/bn::ublas::norm_2(wall_norm));
+	y = y + radius*(wall_norm(1)/bn::ublas::norm_2(wall_norm));
+
         collision_point.x(x);
         collision_point.y(y);
     } else {
@@ -60,6 +72,9 @@ std::tuple<bool,point> collision_point(point w1,
     dot_prod = wall_norm(0) * ball_v(0) + wall_norm(1) * ball_v(1);
     if(dot_prod >= 0)
         exists = false;
+
+   if(! between(w1,w2,collision_point))
+       exists = false;
 
     return std::make_tuple(exists,collision_point);
 }
