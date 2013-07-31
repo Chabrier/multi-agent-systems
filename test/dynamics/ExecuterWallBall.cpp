@@ -107,25 +107,24 @@ public:
     void createBall(double x, double y, double dx, double dy, double radius)
     {
         std::string id = boost::lexical_cast<std::string>(mBallNumbers);
-
+        std::string obs_ports[] = {"x","y","coordinates"};
+        std::map<std::string,vv::Value*> cond_map =
+	    {{"x",vv::Double::create(x)},
+	     {"y",vv::Double::create(y)},
+	     {"dx",vv::Double::create(dx)},
+	     {"dy",vv::Double::create(radius)}};
         //Create experimental conditions
         vp::Condition ball_cond("ball_cond"+id);
-        ball_cond.add("x");
-        ball_cond.add("y");
-        ball_cond.add("dx");
-        ball_cond.add("dy");
-        ball_cond.add("radius");
-        ball_cond.addValueToPort("x", vv::Double::create(x));
-        ball_cond.addValueToPort("y", vv::Double::create(y));
-        ball_cond.addValueToPort("dx", vv::Double::create(dx));
-        ball_cond.addValueToPort("dy", vv::Double::create(dy));
-        ball_cond.addValueToPort("radius", vv::Double::create(radius));
+	for(const auto& it : cond_map) {
+	    ball_cond.add(it.first);
+            ball_cond.addValueToPort(it.first,it.second);
+	}
         conditions().add(ball_cond);
 
         //Create observables
         vp::Observable ball_obs("ball"+id+"_position");
-        ball_obs.add("x");
-        ball_obs.add("y");
+        for(const auto& it : obs_ports)
+	    ball_obs.add(it);
         observables().add(ball_obs);
 
         //Create vle model
@@ -137,8 +136,8 @@ public:
                     ball_obs.name());
 
         //Attach observables
-        addObservableToView("ball" + id, "x", mView);
-        addObservableToView("ball" + id, "y", mView);
+        for(const auto& it : obs_ports)
+            addObservableToView("ball" + id, it, mView);
 
         //Connect to others
         connect("ball" + id);

@@ -174,12 +174,19 @@ public:
     vv::Value* observation(const vd::ObservationEvent& event) const
     {
         vd::Time delta_t = event.getTime() - mLastUpdate;
-
+	double x = (mDirection(0) * delta_t) + mPosition.x();
+	double y = (mDirection(1) * delta_t) + mPosition.y();
         if (event.onPort("x")) {
-            return new vv::Double((mDirection(0) * delta_t) + mPosition.x());
+            return new vv::Double(x);
         }
         if (event.onPort("y")) {
-            return new vv::Double((mDirection(1) * delta_t) + mPosition.y());
+            return new vv::Double(y);
+        }
+        if (event.onPort("coordinates")) {
+	    std::string output;
+	    output = "(" + boost::lexical_cast<std::string>(x)
+		     + ";" + boost::lexical_cast<std::string>(y) + ")";
+            return new vv::String(output);
         }
         return 0;
     }
