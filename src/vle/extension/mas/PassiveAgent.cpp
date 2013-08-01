@@ -30,10 +30,10 @@ vd::Time PassiveAgent::timeAdvance() const
 
 void PassiveAgent::output(const vd::Time&, vd::ExternalEventList& output) const
 {
-    for (auto eventToSend : mEventsToSend) {
+    for (const auto& eventToSend : mEventsToSend) {
         vd::ExternalEvent* event = new vd::ExternalEvent(mOutputPortName);
 
-        for (auto p_name : eventToSend.properties()) {
+        for (const auto& p_name : eventToSend.properties()) {
             vv::Value *v = eventToSend.property(p_name.first).get()->clone();
             event << vd::attribute(p_name.first, v);
         }
@@ -46,7 +46,7 @@ void PassiveAgent::externalTransition(const vd::ExternalEventList& events,
                                       const vd::Time& time)
 {
     mCurrentTime = time;
-    for (auto event : events) {
+    for (const auto& event : events) {
         if (event->getPortName() == mInputPortName) {
             Event parameters;
             for (auto attribute : event->getAttributes()) {
