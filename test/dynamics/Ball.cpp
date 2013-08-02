@@ -26,6 +26,7 @@
 #include <vle/value/Map.hpp>
 #include <vle/value/Value.hpp>
 #include <vle/devs/Dynamics.hpp>
+#include <vle/utils/Tools.hpp>
 
 #include <boost/geometry/geometries/point_xy.hpp>
 
@@ -174,8 +175,8 @@ public:
     vv::Value* observation(const vd::ObservationEvent& event) const
     {
         vd::Time delta_t = event.getTime() - mLastUpdate;
-	double x = (mDirection(0) * delta_t) + mPosition.x();
-	double y = (mDirection(1) * delta_t) + mPosition.y();
+        double x = (mDirection(0) * delta_t) + mPosition.x();
+        double y = (mDirection(1) * delta_t) + mPosition.y();
         if (event.onPort("x")) {
             return new vv::Double(x);
         }
@@ -183,10 +184,10 @@ public:
             return new vv::Double(y);
         }
         if (event.onPort("coordinates")) {
-	    std::string output;
-	    output = "(" + boost::lexical_cast<std::string>(x)
-		     + ";" + boost::lexical_cast<std::string>(y) + ")";
-            return new vv::String(output);
+            std::string output;
+            output = "(" + vle::utils::toScientificString(x)
+                 + ";" + vle::utils::toScientificString(y) + ")";
+                return new vv::String(output);
         }
         return 0;
     }
@@ -196,11 +197,11 @@ public:
         // 1. Compute collision with another ball
         // Case 1 : collinear vector + on the same line
         // Case 2 : other type of collision
-	// 2. Add collision event in scheduler
+        // 2. Add collision event in scheduler
         bool collision = false;
         vector event_ball_direction(2);
         vector b_to_b(2);
-	vector new_direction(2);
+        vector new_direction(2);
         point event_ball_position;
         point collision_point;
 
@@ -232,69 +233,68 @@ public:
                 collision_point.x(mPosition.x() + R*b_to_b(0)*-1);
                 collision_point.y(mPosition.y() + R*b_to_b(1)*-1);
                 collision = true;
-		new_direction= mDirection * -1;
-	    }
+                new_direction= mDirection * -1;
+            }
         } else {// Case 2
-	    double det, dot_prod;
-	    bool exists = true;
-	    /* Compute collision point
-	     * ax + by + c = 0 */
-	    matrix ab(2,2);
-	    vector c(2);
+            double det, dot_prod;
+            bool exists = true;
+            /* Compute collision point
+             * ax + by + c = 0 */
+            matrix ab(2,2);
+            vector c(2);
 
-	    //wall equation
-	    ab(0,0) = -mDirection(1); //a
-	    ab(0,1) =  mDirection(0); //b
-	    //c
-	    c(0) = mDirection(1)*mPosition.x() - mDirection(0)*mPosition.y();
+            //wall equation
+            ab(0,0) = -mDirection(1); //a
+            ab(0,1) =  mDirection(0); //b
+            //c
+            c(0) = mDirection(1)*mPosition.x() - mDirection(0)*mPosition.y();
 
-	    //ball direction equation
-	    ab(1,0) = -event_ball_direction(1); //a
-	    ab(1,1) =  event_ball_direction(0); //b
-	    c(1) = event_ball_direction(1)*event_ball_position.x() -
-		   event_ball_direction(0)*event_ball_position.y(); //c
+            //ball direction equation
+            ab(1,0) = -event_ball_direction(1); //a
+            ab(1,1) =  event_ball_direction(0); //b
+            c(1) = event_ball_direction(1)*event_ball_position.x() -
+               event_ball_direction(0)*event_ball_position.y(); //c
 
-	    det = ab(0,0)*ab(1,1) - ab(1,0)*ab(0,1);
-	    if(det != 0) { // Invertible matrix
-		double x,y;
-		x = (-1*((ab(1,1)*c(0)) - (ab(0,1)*c(1)))) / det;
-		y = (-1*((ab(0,0)*c(1)) - (ab(1,0)*c(0)))) / det;
-		collision_point.x(x);
-		collision_point.y(y);
-	    } else {
-		exists = false;
-	    }
+            det = ab(0,0)*ab(1,1) - ab(1,0)*ab(0,1);
+            if(det != 0) { // Invertible matrix
+            double x,y;
+            x = (-1*((ab(1,1)*c(0)) - (ab(0,1)*c(1)))) / det;
+            y = (-1*((ab(0,0)*c(1)) - (ab(1,0)*c(0)))) / det;
+            collision_point.x(x);
+            collision_point.y(y);
+            } else {
+            exists = false;
+            }
 
-	    //We check if there is a collision direction or not
-	    dot_prod = (collision_point.x() - mPosition.x()) * mDirection(0) +
-		       (collision_point.y() - mPosition.y()) * mDirection(1);
-	    if(dot_prod <= 0)
-		exists = false;
+            //We check if there is a collision direction or not
+            dot_prod = (collision_point.x() - mPosition.x()) * mDirection(0) +
+                   (collision_point.y() - mPosition.y()) * mDirection(1);
+            if(dot_prod <= 0)
+            exists = false;
 
-	    dot_prod = (collision_point.x() - event_ball_position.x())
-		       * event_ball_direction(0) +
-		       (collision_point.y() - event_ball_position.y())
-		       * event_ball_direction(1);
+            dot_prod = (collision_point.x() - event_ball_position.x())
+                   * event_ball_direction(0) +
+                   (collision_point.y() - event_ball_position.y())
+                   * event_ball_direction(1);
 
-	    if(dot_prod <= 0)
-		exists = false;
+            if(dot_prod <= 0)
+            exists = false;
 
-	    if(exists) {
-		double distance, distance_o, time, time_o;
-                distance = bg::distance(mPosition, collision_point);
-                distance_o = bg::distance(event_ball_position, collision_point);
-		time = distance / bn::ublas::norm_2(mDirection);
-		time_o = distance_o / bn::ublas::norm_2(event_ball_direction);
+            if(exists) {
+                double distance, distance_o, time, time_o;
+                        distance = bg::distance(mPosition, collision_point);
+                        distance_o = bg::distance(event_ball_position, collision_point);
+                time = distance / bn::ublas::norm_2(mDirection);
+                time_o = distance_o / bn::ublas::norm_2(event_ball_direction);
 
-		if(time == time_o){
-		       collision = true;
-		       new_direction = (event_ball_direction/
-			                bn::ublas::norm_2(event_ball_direction))
-			               * bn::ublas::norm_2(mDirection);
-		}
-
-	    }
-	    //return std::make_tuple(exists,collision_point);
+                if(time == time_o) {
+                       collision = true;
+                       new_direction = (event_ball_direction/
+                                    bn::ublas::norm_2(event_ball_direction))
+                                   * bn::ublas::norm_2(mDirection);
+                }
+            }
+        //return std::make_tuple(exists,collision_point);
         }
         // 2. Add event in scheduler
         if(collision) {
