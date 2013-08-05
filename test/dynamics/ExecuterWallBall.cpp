@@ -113,7 +113,8 @@ public:
         {{"x",vv::Double::create(x)},
          {"y",vv::Double::create(y)},
          {"dx",vv::Double::create(dx)},
-         {"dy",vv::Double::create(radius)}};
+         {"dy",vv::Double::create(dy)},
+         {"radius",vv::Double::create(radius)}};
         //Create experimental conditions
         vp::Condition ball_cond("ball_cond"+id);
     for(const auto& it : cond_map) {
