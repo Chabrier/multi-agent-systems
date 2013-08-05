@@ -40,6 +40,14 @@ namespace test
 namespace dynamics
 {
 
+/** @class GenericAgent
+ *  @brief Generic Agent class
+ *  It allows user to create an agent model with 3 functions (agent_init,
+ *  agent_dynamic, and agent_handleEvent)
+ *  @see void agent_dynamic()
+ *  @see void agent_init()
+ *  @see void agent_handleEvent(const Event&)
+ */
 class GenericAgent : public vd::Dynamics
 {
 public:
@@ -55,6 +63,7 @@ public:
         switch(mState) {
             case INIT:
                 std::cout << "state=INIT" << std::endl;
+                /* Call internal transition */
                 return 0.0;
             break;
             case IDLE:
@@ -181,10 +190,12 @@ public:
         std::cout << std::endl;
     }
 protected:
+    /** @todo Pure virtual agent functions. Modeler must override them */
     void agent_dynamic(){}
     void agent_init(){}
     void agent_handleEvent(const Event&){}
 private:
+    /** @brief send all the messages in send buffer */
     void sendMessages(vd::ExternalEventList& event_list) const
     {
         for (const auto& eventToSend : mEventsToSend) {
@@ -199,6 +210,8 @@ private:
         }
     }
 
+    /** @brief  Copy external events and calls user function
+     *  @see    agent_handleEvent*/
     void handleExternalEvents(const vd::ExternalEventList &event_list)
     {
         for (const auto& event : event_list) {
