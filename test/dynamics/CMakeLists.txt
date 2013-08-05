@@ -7,6 +7,12 @@ INSTALL(TARGETS Ball
     RUNTIME DESTINATION plugins/simulator
     LIBRARY DESTINATION plugins/simulator)
 
+ADD_LIBRARY(GenericAgentTest MODULE GenericAgentTest.cpp)
+TARGET_LINK_LIBRARIES(GenericAgentTest ${VLE_LIBRARIES} mas)
+INSTALL(TARGETS GenericAgentTest
+    RUNTIME DESTINATION plugins/simulator
+    LIBRARY DESTINATION plugins/simulator)
+
 ADD_LIBRARY(SimpleWall MODULE SimpleWall.cpp)
 TARGET_LINK_LIBRARIES(SimpleWall ${VLE_LIBRARIES} mas)
 INSTALL(TARGETS SimpleWall
