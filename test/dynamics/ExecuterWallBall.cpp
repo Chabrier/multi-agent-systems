@@ -65,15 +65,16 @@ public:
 
     vd::Time init(const vd::Time&)
     {
-        createWall(0, 0, 0, 4);
-        createWall(0, 4, 10, 4);
-        createWall(10, 0, 10, 4);
-        createWall(0, 0, 10, 0);
-        createWall(7, 1, 7, 3);
+        createWall(0, 0, 0, 40);
+        createWall(0, 40, 100, 40);
+        createWall(100, 0, 100, 40);
+        createWall(0, 0, 100, 0);
+        createWall(70, 10, 70, 30);
         //~ createBall(1, 1, 1, 1);
         //~ createBall(1, 1, 0, 1);
         //createBall(1, 1, -1, -1, 0.5);
-        createBall(1, 1, -1, -1, 0.25);
+        createBall(1, 1, 1, -1, 0.25);
+        createBall(20, 1, 1, 1, 0.25);
 
         return vd::infinity;
     }
@@ -107,24 +108,24 @@ public:
     void createBall(double x, double y, double dx, double dy, double radius)
     {
         std::string id = boost::lexical_cast<std::string>(mBallNumbers);
-        std::string obs_ports[] = {"x","y","coordinates"};
+        std::string obs_ports[] = {"coordinates"};
         std::map<std::string,vv::Value*> cond_map =
-	    {{"x",vv::Double::create(x)},
-	     {"y",vv::Double::create(y)},
-	     {"dx",vv::Double::create(dx)},
-	     {"dy",vv::Double::create(radius)}};
+        {{"x",vv::Double::create(x)},
+         {"y",vv::Double::create(y)},
+         {"dx",vv::Double::create(dx)},
+         {"dy",vv::Double::create(radius)}};
         //Create experimental conditions
         vp::Condition ball_cond("ball_cond"+id);
-	for(const auto& it : cond_map) {
-	    ball_cond.add(it.first);
+    for(const auto& it : cond_map) {
+        ball_cond.add(it.first);
             ball_cond.addValueToPort(it.first,it.second);
-	}
+    }
         conditions().add(ball_cond);
 
         //Create observables
         vp::Observable ball_obs("ball"+id+"_position");
         for(const auto& it : obs_ports)
-	    ball_obs.add(it);
+        ball_obs.add(it);
         observables().add(ball_obs);
 
         //Create vle model
