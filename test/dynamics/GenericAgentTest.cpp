@@ -23,6 +23,8 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
+#include <iostream>
+
 #include <vle/utils/Exception.hpp>
 #include <vle/devs/Dynamics.hpp>
 
@@ -169,15 +171,8 @@ public:
         mCurrentTime = t;
         switch(mState) {
             case INIT:
-                std::cout << "state=INIT";
-            break;
             case IDLE:
-                std::cout << "state=IDLE";
-            break;
             case OUTPUT:
-                std::cout << "state=OUTPUT";
-            break;
-            default:
                 /* Handle external event in any case*/
                 handleExternalEvents(event_list);
             break;
