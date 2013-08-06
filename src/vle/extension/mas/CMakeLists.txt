@@ -1,5 +1,5 @@
-SET(SRCS PassiveAgent.cpp Events.cpp Utils.cpp)
-SET(HEADERS Agent.hpp Scheduler.hpp Events.hpp PassiveAgent.hpp
+SET(SRCS GenericAgent.cpp PassiveAgent.cpp Events.cpp Utils.cpp)
+SET(HEADERS GenericAgent.hpp Agent.hpp Scheduler.hpp Events.hpp PassiveAgent.hpp
     ActiveAgent.hpp Utils.hpp)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS}
     ${VLE_INCLUDE_DIRS})
