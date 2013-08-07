@@ -15,7 +15,8 @@ GenericAgent::GenericAgent(const vd::DynamicsInit &init,
 
 vd::Time GenericAgent::init(const vd::Time &t)
 {
-    std::cout << "(init) ";
+    std::cout << "[" << getModelName() << "][" << t << "]"
+              << "(init) ";
     mCurrentTime = t;
     switch(mState) {
         case INIT:
@@ -37,7 +38,8 @@ vd::Time GenericAgent::init(const vd::Time &t)
 
 void GenericAgent::internalTransition(const vd::Time &t)
 {
-    std::cout << "(internalTransition) ";
+    std::cout << "[" << getModelName() << "][" << t << "]"
+              << "(internalTransition) ";
     mCurrentTime = t;
     switch(mState) {
         case INIT:
@@ -69,7 +71,8 @@ void GenericAgent::internalTransition(const vd::Time &t)
 
 vd::Time GenericAgent::timeAdvance() const
 {
-    std::cout << "(timeAdvance) ";
+    std::cout << "[" << getModelName() << "][" << mCurrentTime << "]"
+              << "(timeAdvance) ";
     switch(mState) {
         case INIT:
             throw vle::utils::InternalError("function timeAdvance called "\
@@ -103,10 +106,11 @@ vd::Time GenericAgent::timeAdvance() const
     return vd::infinity;
 }
 
-void GenericAgent::output(const vd::Time&,
+void GenericAgent::output(const vd::Time &t,
                           vd::ExternalEventList &event_list) const
 {
-    std::cout << "(output)";
+    std::cout << "[" << getModelName() << "][" << t << "]"
+              << "(output)";
     switch(mState) {
         case INIT:
             std::cout << "state=INIT";
@@ -127,7 +131,8 @@ void GenericAgent::externalTransition(
                                     const vd::ExternalEventList &event_list,
                                     const vd::Time &t)
 {
-    std::cout << "(externalTransition) ";
+    std::cout << "[" << getModelName() << "][" << t << "]"
+              << "(externalTransition) ";
     mCurrentTime = t;
     switch(mState) {
         case INIT:
@@ -150,13 +155,15 @@ void GenericAgent::sendMessages(vd::ExternalEventList& event_list) const
 {
     for (const auto& eventToSend : mEventsToSend) {
         vd::ExternalEvent* event = new vd::ExternalEvent(cOutputPortName);
-
+        std::cout << "< ";
         for (const auto& p_name : eventToSend.properties()) {
             vv::Value *v = eventToSend[p_name.first].get()->clone();
             event << vd::attribute(p_name.first, v);
+            std::cout << "<\"" << p_name.first << "\",\"" << *v << "\">";
         }
         event << vd::attribute("from",getModelName());
         event_list.push_back(event);
+        std::cout << " >";
     }
 }
 
