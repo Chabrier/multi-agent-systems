@@ -13,8 +13,20 @@ INSTALL(TARGETS SimpleWall
     RUNTIME DESTINATION plugins/simulator
     LIBRARY DESTINATION plugins/simulator)
 
+ADD_LIBRARY(WallG MODULE WallG.cpp)
+TARGET_LINK_LIBRARIES(WallG ${VLE_LIBRARIES} mas)
+INSTALL(TARGETS WallG
+    RUNTIME DESTINATION plugins/simulator
+    LIBRARY DESTINATION plugins/simulator)
+
 ADD_LIBRARY(ExecuterWallBall MODULE ExecuterWallBall.cpp)
 TARGET_LINK_LIBRARIES(ExecuterWallBall ${VLE_LIBRARIES} mas)
 INSTALL(TARGETS ExecuterWallBall
+    RUNTIME DESTINATION plugins/simulator
+    LIBRARY DESTINATION plugins/simulator)
+
+ADD_LIBRARY(BallG MODULE BallG.cpp)
+TARGET_LINK_LIBRARIES(BallG ${VLE_LIBRARIES} mas)
+INSTALL(TARGETS BallG
     RUNTIME DESTINATION plugins/simulator
     LIBRARY DESTINATION plugins/simulator)

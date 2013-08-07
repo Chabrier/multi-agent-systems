@@ -54,12 +54,12 @@ public:
 
         vp::Dynamic dyn("dyn_ball");
         dyn.setPackage("vle.extension.mas");
-        dyn.setLibrary("Ball");
+        dyn.setLibrary("BallG");
         dynamics().add(dyn);
 
         vp::Dynamic dynw("dyn_wall");
         dynw.setPackage("vle.extension.mas");
-        dynw.setLibrary("SimpleWall");
+        dynw.setLibrary("WallG");
         dynamics().add(dynw);
     }
 
