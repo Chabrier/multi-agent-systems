@@ -45,11 +45,13 @@ void GenericAgent::internalTransition(const vd::Time &t)
             /* model initialization */
             agent_init();
             mState = IDLE;
+            mLastUpdate = t;
         break;
         case IDLE:
             std::cout << "state=IDLE";
             /* model behaviour */
             agent_dynamic();
+            mLastUpdate = t;
         break;
         case OUTPUT:
             std::cout << "state=OUTPUT";
@@ -77,16 +79,17 @@ vd::Time GenericAgent::timeAdvance() const
         case IDLE:
             std::cout << "state=IDLE";
             if (mScheduler.empty()) {
-                std::cout << "return infinity" << std::endl;
+                std::cout << " return infinity" << std::endl;
                 /* Waiting state */
                 return vd::infinity;
             } else {
-                std::cout << "return "
+                std::cout << " return "
                           << mScheduler.next_event()["time"]
-                                        ->toDouble().value()
+                                        ->toDouble().value() - mCurrentTime
                           << std::endl;
                 /* Wake me when next event is ready*/
-                return mScheduler.next_event()["time"]->toDouble().value();
+                return mScheduler.next_event()["time"]->toDouble().value()
+                       - mCurrentTime;
             }
         break;
         case OUTPUT:

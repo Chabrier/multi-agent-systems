@@ -71,6 +71,9 @@ protected:
     virtual void agent_dynamic() = 0;
     virtual void agent_init() = 0;
     virtual void agent_handleEvent(const Event&) = 0;
+
+    /* Utils functions */
+    void sendEvent(Event& e) { mEventsToSend.push_back(e); }
 private:
     /** @brief send all the messages in send buffer */
     void sendMessages(vd::ExternalEventList& event_list) const;
@@ -81,12 +84,14 @@ private:
 protected:
     static const std::string cOutputPortName;   /**< Agent output port name */
     static const std::string cInputPortName;    /**< Agent input port name */
+
+    Scheduler<Event> mScheduler;        /**< Agent scheduler */
+    double mCurrentTime;                /**< Last known simulation time */
+    double mLastUpdate;                /**< Last time the model had been updated */
 private:
     typedef enum { INIT,IDLE,OUTPUT } states;
 
     states mState;                      /**< Agent current state */
-    double mCurrentTime;                /**< Last known simulation time */
-    Scheduler<Event> mScheduler;        /**< Agent scheduler */
     std::vector<Event> mEventsToSend;   /**< Events to send whith devs::output*/
 };
 
