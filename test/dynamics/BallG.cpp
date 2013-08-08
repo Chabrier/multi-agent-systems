@@ -72,28 +72,52 @@ protected:
 
         if (next_event["type"]->toString().value() == "collision") {
             bool corner = false;
+            vector newDirection(2);
+            double wall_x1 = 0, wall_y1 = 0, wall_x2 = 0, wall_y2 = 0;
+            if(next_event["with"]->toString().value() == "wall") {
+                double wall_x1 = next_event["wall_x1"]->toDouble().value();
+                double wall_y1 = next_event["wall_y1"]->toDouble().value();
+                double wall_x2 = next_event["wall_x2"]->toDouble().value();
+                double wall_y2 = next_event["wall_y2"]->toDouble().value();
+                newDirection = new_direction(point(wall_x1,wall_y1),
+                                             point(wall_x2,wall_y2),
+                                             mPosition,
+                                             mDirection);
+            } else if (next_event["with"]->toString().value()
+                       == "ball") {
+                newDirection(0) = next_event["new_dx"]->toDouble().value();
+                newDirection(1) = next_event["new_dy"]->toDouble().value();
+            }
 
-            if (!mScheduler.empty()) {
+            if (!mScheduler.empty() &&
+                mScheduler.next_event()["with"]->toString().value() == "wall") {
                 Event next_event2 = mScheduler.next_event();
 
-                if((next_event["new_x"]->toDouble().value()
-                   == next_event2["new_x"]->toDouble().value())
-                   &&(next_event["new_y"]->toDouble().value()
-                   == next_event2["new_y"]->toDouble().value()))
-                   corner = true;
-                else if(next_event["collision_distance"]->toDouble().value()
-                   == next_event2["collision_distance"]->toDouble().value())
-                    corner = true;
-                else if(next_event["time"]->toDouble().value()
-                        == next_event2["time"]->toDouble().value())
-                    corner = true;
+                if(next_event2["type"]->toString().value() == "collision") {
+                    double wall2_x1 = next_event2["wall_x1"]->toDouble().value();
+                    double wall2_y1 = next_event2["wall_y1"]->toDouble().value();
+                    double wall2_x2 = next_event2["wall_x2"]->toDouble().value();
+                    double wall2_y2 = next_event2["wall_y2"]->toDouble().value();
+                    vector newDirection2 = new_direction(point(wall2_x1,wall2_y1),
+                                                         point(wall2_x2,wall2_y2),
+                                                         mPosition,
+                                                         mDirection);
+                    if((newDirection(0) == newDirection2(0))
+                       &&(newDirection(1) == newDirection2(1)))
+                       corner = true;
+                    else if(next_event["collision_distance"]->toDouble().value()
+                       == next_event2["collision_distance"]->toDouble().value())
+                        corner = true;
+                    else if(next_event["time"]->toDouble().value()
+                            == next_event2["time"]->toDouble().value())
+                        corner = true;
+                }
             }
 
             mPosition.x(next_event["new_x"]->toDouble().value());
             mPosition.y(next_event["new_y"]->toDouble().value());
             if (!corner) {
-                mDirection(0)= next_event["new_dx"]->toDouble().value();
-                mDirection(1)= next_event["new_dy"]->toDouble().value();
+                mDirection = newDirection;
             } else {
                 mDirection= mDirection * -1;
             }
@@ -288,9 +312,12 @@ protected:
                                    new vv::Double(collision_distance));
         new_collision.add_property("type",
                                    new vv::String("collision"));
+        new_collision.add_property("with",
+                                   new vv::String("ball"));
         new_collision.add_property("to",new vv::String(ball_name));
         mScheduler.add_event(new_collision);
     }
+
 private:
     point mPosition;
     vector mDirection;

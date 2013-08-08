@@ -72,7 +72,7 @@ public:
             point xy_ball, collision_pt; //Ball position
             vector v_ball(2);            //Ball direction vector
             bool collision = false;
-        double radius;
+            double radius;
 
             xy_ball.x(event.property("x")->toDouble().value());
             xy_ball.y(event.property("y")->toDouble().value());
@@ -86,7 +86,6 @@ public:
                                                                 v_ball,
                                 radius);
             if(collision) {
-                vector direction(2);
                 double distance, time;
                 std::string ball_name;
 
@@ -94,28 +93,36 @@ public:
                 time = distance / bn::ublas::norm_2(v_ball);
                 ball_name = event.property("from")->toString().value();
                 if(distance > 0) {
-                    direction = new_direction(x1,x2,xy_ball,v_ball);
-                    sendCollisionEvent(collision_pt,direction,
-                                       distance,time+mCurrentTime,ball_name);
+                    sendCollisionEvent(collision_pt,
+                                       distance,
+                                       time+mCurrentTime,
+                                       ball_name);
                 }
             }
         }
     }
 
     void sendCollisionEvent(point xy_collision,
-                            vector new_vector,
                             double collision_distance,
                             double collision_time,
                             const std::string& ball_name)
     {
         Event new_collision(collision_time);
 
-        new_collision.add_property("new_dx",vv::Double::create(new_vector[0]));
-        new_collision.add_property("new_dy",vv::Double::create(new_vector[1]));
         new_collision.add_property("new_x",
                                    vv::Double::create(xy_collision.x()));
         new_collision.add_property("new_y",
                                    vv::Double::create(xy_collision.y()));
+        new_collision.add_property("wall_x1",
+                                   vv::Double::create(x1.x()));
+        new_collision.add_property("wall_y1",
+                                   vv::Double::create(x1.y()));
+        new_collision.add_property("wall_x2",
+                                   vv::Double::create(x2.x()));
+        new_collision.add_property("wall_y2",
+                                   vv::Double::create(x2.y()));
+        new_collision.add_property("with",
+                                   vv::String::create("wall"));
         new_collision.add_property("collision_distance",
                                    vv::Double::create(collision_distance));
         new_collision.add_property("type",vv::String::create("collision"));
