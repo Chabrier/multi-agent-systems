@@ -6,7 +6,7 @@ namespace mas {
 
 
 const std::string GenericAgent::cOutputPortName = "agent_output";
-const std::string GenericAgent::cInputPortName = "agent_input";
+const std::string GenericAgent::cInputPortName =  "agent_input";
 
 GenericAgent::GenericAgent(const vd::DynamicsInit &init,
                            const vd::InitEventList &events)

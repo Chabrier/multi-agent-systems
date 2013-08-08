@@ -59,17 +59,18 @@ public:
     GenericAgent(const vd::DynamicsInit &init, const vd::InitEventList &events);
 
     /* vle::devs override functions */
-    virtual vd::Time init(const vd::Time &t);
-    virtual void internalTransition(const vd::Time &t);
+    virtual vd::Time init(const vd::Time&);
+    virtual void internalTransition(const vd::Time&);
     virtual vd::Time timeAdvance() const;
-    virtual void output(const vd::Time&,
-                        vd::ExternalEventList &event_list) const;
-    virtual void externalTransition(const vd::ExternalEventList &event_list,
-                            const vd::Time &t);
+    virtual void output(const vd::Time&, vd::ExternalEventList&) const;
+    virtual void externalTransition(const vd::ExternalEventList&,
+                                    const vd::Time&);
 protected:
     /** @brief Pure virtual agent functions. Modeler must override them */
     virtual void agent_dynamic() = 0;
+    /** @brief Pure virtual agent functions. Modeler must override them */
     virtual void agent_init() = 0;
+    /** @brief Pure virtual agent functions. Modeler must override them */
     virtual void agent_handleEvent(const Event&) = 0;
 
     /* Utils functions */
@@ -85,13 +86,13 @@ protected:
     static const std::string cOutputPortName;   /**< Agent output port name */
     static const std::string cInputPortName;    /**< Agent input port name */
 
-    Scheduler<Event> mScheduler;        /**< Agent scheduler */
-    double mCurrentTime;                /**< Last known simulation time */
-    double mLastUpdate;                /**< Last time the model had been updated */
+    Scheduler<Event> mScheduler;    /**< Agent scheduler */
+    double           mCurrentTime;  /**< Last known simulation time */
+    double           mLastUpdate;   /**< Last time the model had been updated */
 private:
-    typedef enum { INIT,IDLE,OUTPUT } states;
+    typedef enum { INIT,IDLE,OUTPUT } states; /**< states of machine state*/
 
-    states mState;                      /**< Agent current state */
+    states             mState;          /**< Agent current state */
     std::vector<Event> mEventsToSend;   /**< Events to send whith devs::output*/
 };
 
