@@ -14,3 +14,4 @@ add_test(Agent_test Agent)
 add_test(Scheduler_test Scheduler)
 
 add_subdirectory(dynamics)
+add_subdirectory(collision)
