@@ -69,13 +69,25 @@ public:
         createWall(0, 40, 100, 40);
         createWall(100, 0, 100, 40);
         createWall(0, 0, 100, 0);
-        createWall(70, 10, 70, 30);
-        //~ createBall(1, 1, 1, 1);
-        //~ createBall(1, 1, 0, 1);
-        //createBall(1, 1, -1, -1, 0.5);
-        createBall(1, 1, 1, -1, 0.25);
-        createBall(20, 1, 1, 1, 0.25);
+        //createWall(70, 100, 70, 30);
+        createBall(1, 1,0.5, 0.5, 1);
+        createBall(30, 30, 0, 0.5, 1);
+        createBall(5, 5, -0.5, -0.5, 0.5);
+        createBall(66,35, 0.5, -0.5, 1);
+        createBall(20, 1, 0.5, 0.5, 1);
+        createBall(3, 3, 0.5, 0.5, 1);
+        createBall(24, 24, 0, 0.5, 1);
+        createBall(30, 5, -1, -1, 0.5);
+        createBall(10, 2, 0.5, -0.5, 1);
+        createBall(15, 9, 0.5, 1, 1);
+        createBall(90, 24, 0, 0.5, 2);
+        createBall(38, 5, -0.5, -0.5, 0.5);
+        createBall(75, 2, 0.5, -0.5, 2);
+        createBall(60, 9, 0.5, 0.5, 3);
 
+        //~ createBall(10, 10, -1, -1, sqrt(2)/2.0);
+        //~ createBall(8, 10, 1, -1, sqrt(2)/2.0);
+        //~ createBall(9, 9, 0, 1, sqrt(2)/2.0);
         return vd::infinity;
     }
 

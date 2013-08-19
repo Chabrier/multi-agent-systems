@@ -35,7 +35,9 @@
 
 #include <vle/extension/mas/GenericAgent.hpp>
 #include <vle/extension/mas/Events.hpp>
-#include <vle/extension/mas/Utils.hpp>
+#include <vle/extension/mas/collision/Types.hpp>
+#include <vle/extension/mas/collision/Segment.hpp>
+#include <vle/extension/mas/collision/Circle.hpp>
 
 using namespace vle::extension::mas;
 namespace vd = vle::devs;
@@ -56,10 +58,13 @@ public:
     WallG(const vd::DynamicsInit& init, const vd::InitEventList& events)
         : GenericAgent(init, events)
     {
-        x1.x((events.exist("x1")) ? events.getDouble("x1") : -1);
-        x2.x((events.exist("x2")) ? events.getDouble("x2") : -1);
-        x1.y((events.exist("y1")) ? events.getDouble("y1") : -1);
-        x2.y((events.exist("y2")) ? events.getDouble("y2") : -1);
+        Point x1(events.exist("x1") ? events.getDouble("x1") : -1,
+                 events.exist("y1") ? events.getDouble("y1") : -1);
+        Point x2(events.exist("x2") ? events.getDouble("x2") : -1,
+                 events.exist("y2") ? events.getDouble("y2") : -1);
+
+        mSegment.setEnd1(x1);
+        mSegment.setEnd2(x2);
     }
 
     void agent_init() {}
@@ -69,28 +74,20 @@ public:
     void agent_handleEvent(const Event& event)
     {
         if (event.property("type")->toString().value() == "ball_position") {
-            point xy_ball, collision_pt; //Ball position
-            vector v_ball(2);            //Ball direction vector
-            bool collision = false;
-            double radius;
+            Vector2d v_ball(event.property("dx")->toDouble().value(),
+                            event.property("dy")->toDouble().value());
+            Circle circle(Point(event.property("x")->toDouble().value(),
+                                event.property("y")->toDouble().value()),
+                          event.property("radius")->toDouble().value());
 
-            xy_ball.x(event.property("x")->toDouble().value());
-            xy_ball.y(event.property("y")->toDouble().value());
-            v_ball[0] = (event.property("dx")->toDouble().value());
-            v_ball[1] = (event.property("dy")->toDouble().value());
-        radius = (event.property("radius")->toDouble().value());
-
-            std::tie(collision, collision_pt) = collision_point(x1,
-                                                                x2,
-                                                                xy_ball,
-                                                                v_ball,
-                                radius);
-            if(collision) {
+            if(circle.inCollision(mSegment,v_ball)) {
+                CollisionPoints cp = circle.collisionPoints(mSegment,v_ball);
+                Point collision_pt = cp.object1CollisionPosition;
                 double distance, time;
                 std::string ball_name;
 
-                distance = bg::distance(xy_ball, collision_pt);
-                time = distance / bn::ublas::norm_2(v_ball);
+                distance = bg::distance(circle.getCenter(), collision_pt);
+                time = distance / v_ball.norm();
                 ball_name = event.property("from")->toString().value();
                 if(distance > 0) {
                     sendCollisionEvent(collision_pt,
@@ -102,7 +99,7 @@ public:
         }
     }
 
-    void sendCollisionEvent(point xy_collision,
+    void sendCollisionEvent(Point xy_collision,
                             double collision_distance,
                             double collision_time,
                             const std::string& ball_name)
@@ -114,13 +111,13 @@ public:
         new_collision.add_property("new_y",
                                    vv::Double::create(xy_collision.y()));
         new_collision.add_property("wall_x1",
-                                   vv::Double::create(x1.x()));
+                                   vv::Double::create(mSegment.getEnd1().x()));
         new_collision.add_property("wall_y1",
-                                   vv::Double::create(x1.y()));
+                                   vv::Double::create(mSegment.getEnd1().y()));
         new_collision.add_property("wall_x2",
-                                   vv::Double::create(x2.x()));
+                                   vv::Double::create(mSegment.getEnd2().x()));
         new_collision.add_property("wall_y2",
-                                   vv::Double::create(x2.y()));
+                                   vv::Double::create(mSegment.getEnd2().y()));
         new_collision.add_property("with",
                                    vv::String::create("wall"));
         new_collision.add_property("collision_distance",
@@ -131,8 +128,7 @@ public:
     }
 
 private:
-    point x1;
-    point x2;
+    Segment mSegment;
 };
 }
 }
