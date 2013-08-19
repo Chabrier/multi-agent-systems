@@ -80,6 +80,26 @@ BOOST_AUTO_TEST_CASE( collisionPointsTest )
         BOOST_CHECK_CLOSE(collision.x(), intersection.x() + -1*n_direction.x(), 0.0001 );
         BOOST_CHECK_CLOSE(collision.y(), intersection.y() + -1*n_direction.y(), 0.0001 );
     }
+
+    {
+        //~ Segment segment(Point(0.0,0.0),Point(0.0,100.0));
+        //~ Circle circle(Point(1.0,1.0),0.25);
+        //~ Vector2d direction(1.0,-1.0);
+        //~ Vector2d n_direction = direction;
+        //~ n_direction.normalize();
+//~
+        //~ Point intersection, collision;
+        //~ CollisionPoints cp;
+        //~ cp = circle.collisionPoints(segment,direction);
+        //~ intersection = cp.collisionPoint;
+        //~ collision = cp.object1CollisionPosition;
+//~
+        //~ BOOST_CHECK_CLOSE(intersection.x(), 2.0, 0.0001 );
+        //~ BOOST_CHECK_CLOSE(intersection.y(), 0.0, 0.0001 );
+        //~ BOOST_CHECK_CLOSE(bg::distance(collision,intersection),0.25,0.0001);
+        //~ BOOST_CHECK_CLOSE(collision.x(), , 0.0001 );
+        //~ BOOST_CHECK_CLOSE(collision.y(), , 0.0001 );
+    }
 }
 
 BOOST_AUTO_TEST_CASE( newDirection )

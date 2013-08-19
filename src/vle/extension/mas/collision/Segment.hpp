@@ -9,6 +9,8 @@ public:
     Segment(const Point& p1,const Point& p2)
     :mEnd1(p1),mEnd2(p2)
     {}
+    Segment()
+    {}
 
     const Point& getEnd1() const
     { return mEnd1; }

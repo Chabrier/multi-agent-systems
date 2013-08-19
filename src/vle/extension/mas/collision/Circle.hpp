@@ -9,9 +9,13 @@ public:
     Circle(const Point& center,double radius)
     :mCenter(center),mRadius(radius)
     {}
+    Circle()
+    {}
 
     double getRadius() const;
     const Point& getCenter() const;
+    double& getRadius();
+    Point& getCenter();
 
     /* Circle/Segment collisions */
     bool inCollision(Segment,const Vector2d&) const;

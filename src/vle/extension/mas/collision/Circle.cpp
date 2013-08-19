@@ -6,11 +6,17 @@ double Circle::getRadius() const
 const Point& Circle::getCenter() const
 { return mCenter; }
 
+double& Circle::getRadius()
+{ return mRadius; }
+
+Point& Circle::getCenter()
+{ return mCenter; }
+
 /* Circle/Segment collisions */
 bool Circle::inCollision(Segment segment,const Vector2d& directionVector) const
 {
     Vector2d wallDirectionVector, n_wallDirectionVector;
-    Vector2d n_directionVector;
+    Vector2d n_directionVector, n_wallNormVector;
     Point intersectionPoint;
 
     /* Init variables */
@@ -31,6 +37,21 @@ bool Circle::inCollision(Segment segment,const Vector2d& directionVector) const
         (n_wallDirectionVector == -1 * n_directionVector)) {
         return false;
     }
+
+    /* Compute normal vector */
+    n_wallNormVector.x() = n_wallDirectionVector.y();
+    n_wallNormVector.y() = -n_wallDirectionVector.x();
+
+    /* reverse normal vector if it is in wrong direction */
+    Vector2d tmp(mCenter.x() - segment.getEnd1().x(),
+                 mCenter.y() - segment.getEnd1().y());
+
+    if (n_wallNormVector.dot_prod(tmp) < 0)
+        n_wallNormVector = -1 * n_wallNormVector;
+
+    /* if ball direction is not to here */
+    if(n_wallNormVector.dot_prod(directionVector) >= 0)
+        return false;
 
     /* Compute intersection point */
     Point directionBis = Point(mCenter.x()+directionVector.x(),
@@ -237,11 +258,15 @@ CollisionPoints Circle::collisionPoints(const Vector2d& myVelocity,
 }
 
 Vector2d Circle::newDirection(const Vector2d& myVelocity,
-                              const Circle& otherCircle,
+                              const Circle& c2,
                               const Vector2d& v2) const
 {
-    Vector2d balltoballVector(otherCircle.getCenter().x() - mCenter.x(),
-                              otherCircle.getCenter().y() - mCenter.y());
+    CollisionPoints cp = collisionPoints(myVelocity,c2,v2);
+    Point myFutureCenter = cp.object1CollisionPosition;
+    Point otherCircleCenter = cp.object2CollisionPosition;
+
+    Vector2d balltoballVector(otherCircleCenter.x() - myFutureCenter.x(),
+                              otherCircleCenter.y() - myFutureCenter.y());
     Vector2d n_balltoballVector = balltoballVector;
     n_balltoballVector.normalize();
 
@@ -251,8 +276,10 @@ Vector2d Circle::newDirection(const Vector2d& myVelocity,
         n_balltoballNormVector *= -1;
 
     Vector2d projection1, projection2;
-    projection1 = n_balltoballNormVector.dot_prod(myVelocity) * n_balltoballNormVector;
-    projection2 = -1*n_balltoballVector.dot_prod(myVelocity) * n_balltoballVector;
+    projection1 = n_balltoballNormVector.dot_prod(myVelocity)
+                  * n_balltoballNormVector;
+    projection2 = -1*n_balltoballVector.dot_prod(myVelocity)
+                  * n_balltoballVector;
 
     return projection1 + projection2;
 }
