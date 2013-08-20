@@ -142,7 +142,9 @@ protected:
             std::string receiver = event.property("to")->toString().value();
             if(receiver == getModelName())
                 mScheduler.add_event(event);
-        } else if (type == "ball_position") {
+        } else if (type == "ball_position"
+                || ((type == "collision_callback") &&
+                  (event.property("to")->toString().value() == getModelName()))) {
             Point c2(event.property("x")->toDouble().value(),
                      event.property("y")->toDouble().value());
             Vector2d d2(event.property("dx")->toDouble().value(),
@@ -156,27 +158,21 @@ protected:
                 Vector2d new_direction = currentCircle.newDirection(mDirection,
                                                               Circle(c2,radius),
                                                               d2);
-                Vector2d o_new_direction = Circle(c2,radius).newDirection(d2,
-                                                                          currentCircle,
-                                                                          mDirection);
                 double distance = bg::distance(cp.object1CollisionPosition,
                                                currentCircle.getCenter());
                 double time = distance / mDirection.norm();
-                double distance2 = bg::distance(cp.object2CollisionPosition,
-                                                c2);
-                double time2 = distance2 / d2.norm();
+
                 std::string to = event.property("from")->toString().value();
                 addCollisionEvent(cp.object1CollisionPosition,
                                   new_direction,
                                   distance,
                                   time+mCurrentTime,
                                   to);
+
                 // Update other ball
-                sendCollisionEvent(cp.object2CollisionPosition,
-                                   o_new_direction,
-                                   distance2,
-                                   time2+mCurrentTime,
-                                   to);
+                if (type == "ball_position") {
+                    sendCollisionCallback(to);
+                }
             }
         }
     }
@@ -219,32 +215,25 @@ protected:
         sendEvent(event);
     }
 
-    void sendCollisionEvent(Point xy_collision,
-                           Vector2d new_vector,
-                           double collision_distance,
-                           double collision_time,
-                           const std::string& ball_name)
+    void sendCollisionCallback(const std::string& to)
     {
-        Event new_collision(collision_time);
+        Event event(0);
 
-        new_collision.add_property("new_dx",
-                                   new vv::Double(new_vector.x()));
-        new_collision.add_property("new_dy",
-                                   new vv::Double(new_vector.y()));
-        new_collision.add_property("new_x",
-                                   new vv::Double(xy_collision.x()));
-        new_collision.add_property("new_y",
-                                   new vv::Double(xy_collision.y()));
-        new_collision.add_property("collision_distance",
-                                   new vv::Double(collision_distance));
-        new_collision.add_property("type",
-                                   new vv::String("collision"));
-        new_collision.add_property("with",
-                                   new vv::String("ball"));
-        new_collision.add_property("to",new vv::String(ball_name));
-        new_collision.add_property("from",new vv::String(getModelName()));
+        vd::Time delta_t = mCurrentTime - mLastUpdate;
+        double x = (mDirection.x() * delta_t) + mCircle.getCenter().x();
+        double y = (mDirection.y() * delta_t) + mCircle.getCenter().y();
 
-        sendEvent(new_collision);
+        event.add_property("x", vv::Double::create(x));
+        event.add_property("y", vv::Double::create(y));
+        event.add_property("dx", vv::Double::create(mDirection.x()));
+        event.add_property("dy", vv::Double::create(mDirection.y()));
+        event.add_property("from", vv::String::create(getModelName()));
+        event.add_property("type", vv::String::create("collision_callback"));
+        event.add_property("radius", vv::Double::create(mCircle.getRadius()));
+        event.add_property("to", vv::String::create(to));
+        event.add_property("from", vv::String::create(getModelName()));
+
+        sendEvent(event);
     }
 
     void addCollisionEvent(Point xy_collision,
