@@ -68,8 +68,7 @@ public:
         createWall(0, 40, 100, 40);
         createWall(100, 0, 100, 40);
         createWall(0, 0, 100, 0);
-        //createWall(70, 100, 70, 30);
-        createBall(1, 1,0.5, 0.5, 1);
+        //~ createBall(1, 1,-1.0,-1.0, 0.25); //runtime error (corner problem)
         createBall(30, 30, 0, 0.5, 1);
         createBall(5, 5, -0.5, -0.5, 0.5);
         createBall(66,35, 0.5, -0.5, 1);

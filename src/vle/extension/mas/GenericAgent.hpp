@@ -27,13 +27,16 @@
 #define GENERIC_AGENT_HPP
 
 #include <iostream>
+#include <unordered_map>
 
 #include <vle/utils/Exception.hpp>
 #include <vle/devs/Dynamics.hpp>
 
 #include <vle/extension/mas/Scheduler.hpp>
-#include <vle/extension/mas/Events.hpp>
+#include <vle/extension/mas/Message.hpp>
+#include <vle/extension/mas/Effect.hpp>
 
+#include <boost/bind.hpp>
 namespace vd = vle::devs;
 namespace vu = vle::utils;
 using namespace vle::extension::mas;
@@ -65,16 +68,23 @@ public:
     virtual void output(const vd::Time&, vd::ExternalEventList&) const;
     virtual void externalTransition(const vd::ExternalEventList&,
                                     const vd::Time&);
+
+    inline void addEffect(const std::string& name,
+                          const Effect::EffectFunction& f)
+    {mEffectBinder.insert(std::make_pair(name,f));}
+
+    inline void applyEffect(const std::string& name, const Effect& e)
+    {mEffectBinder.at(name)(e);}
 protected:
     /** @brief Pure virtual agent functions. Modeler must override them */
     virtual void agent_dynamic() = 0;
     /** @brief Pure virtual agent functions. Modeler must override them */
     virtual void agent_init() = 0;
     /** @brief Pure virtual agent functions. Modeler must override them */
-    virtual void agent_handleEvent(const Event&) = 0;
+    virtual void agent_handleEvent(const Message&) = 0;
 
     /* Utils functions */
-    void sendEvent(Event& e) { mEventsToSend.push_back(e); }
+    inline void sendMessage(Message& m) { mMessagesToSend.push_back(m); }
 private:
     /** @brief send all the messages in send buffer */
     void sendMessages(vd::ExternalEventList& event_list) const;
@@ -86,14 +96,18 @@ protected:
     static const std::string cOutputPortName;   /**< Agent output port name */
     static const std::string cInputPortName;    /**< Agent input port name */
 
-    Scheduler<Event> mScheduler;    /**< Agent scheduler */
+    Scheduler<Effect> mScheduler;    /**< Agent scheduler */
     double           mCurrentTime;  /**< Last known simulation time */
     double           mLastUpdate;   /**< Last time the model had been updated */
 private:
-    typedef enum { INIT,IDLE,OUTPUT } states; /**< states of machine state*/
+    typedef enum {INIT,/**< initialization state:initialize vars and behaviour*/
+                  IDLE,/**< idle state : listen network and do dynamic*/
+                  OUTPUT/**< output state : send messages*/
+                 } states; /**< states of machine state*/
 
     states             mState;          /**< Agent current state */
-    std::vector<Event> mEventsToSend;   /**< Events to send whith devs::output*/
+    std::vector<Message> mMessagesToSend;   /**< Events to send whith devs::output*/
+    std::unordered_map<std::string,Effect::EffectFunction> mEffectBinder;
 };
 
 }}} //namespace vle extension mas

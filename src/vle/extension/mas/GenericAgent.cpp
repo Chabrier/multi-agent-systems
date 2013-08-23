@@ -59,12 +59,12 @@ void GenericAgent::internalTransition(const vd::Time &t)
             std::cout << "state=OUTPUT";
             /* remove messages (they have been sent!)*/
             mState = IDLE;
-            mEventsToSend.clear();
+            mMessagesToSend.clear();
         break;
     }
 
     /* Send all the messages */
-    if(mEventsToSend.size() > 0)
+    if(mMessagesToSend.size() > 0)
         mState = OUTPUT;
     std::cout << std::endl;
 }
@@ -87,12 +87,10 @@ vd::Time GenericAgent::timeAdvance() const
                 return vd::infinity;
             } else {
                 std::cout << " return "
-                          << mScheduler.next_event()["time"]
-                                        ->toDouble().value() - mCurrentTime
+                          << mScheduler.nextEffect().getDate() - mCurrentTime
                           << std::endl;
                 /* Wake me when next event is ready*/
-                return mScheduler.next_event()["time"]->toDouble().value()
-                       - mCurrentTime;
+                return mScheduler.nextEffect().getDate() - mCurrentTime;
             }
         break;
         case OUTPUT:
@@ -127,9 +125,8 @@ void GenericAgent::output(const vd::Time &t,
     std::cout << std::endl;
 }
 
-void GenericAgent::externalTransition(
-                                    const vd::ExternalEventList &event_list,
-                                    const vd::Time &t)
+void GenericAgent::externalTransition(const vd::ExternalEventList &event_list,
+                                      const vd::Time &t)
 {
     std::cout << "[" << getModelName() << "][" << t << "]"
               << "(externalTransition) ";
@@ -144,7 +141,7 @@ void GenericAgent::externalTransition(
     }
 
     /* Send all the messages */
-    if(mEventsToSend.size() > 0)
+    if(mMessagesToSend.size() > 0)
         mState = OUTPUT;
 
     std::cout << std::endl;
@@ -153,16 +150,18 @@ void GenericAgent::externalTransition(
 
 void GenericAgent::sendMessages(vd::ExternalEventList& event_list) const
 {
-    for (const auto& eventToSend : mEventsToSend) {
-        vd::ExternalEvent* event = new vd::ExternalEvent(cOutputPortName);
+    for (const auto& messageToSend : mMessagesToSend) {
+        vd::ExternalEvent* DEVS_event = new vd::ExternalEvent(cOutputPortName);
         std::cout << "< ";
-        for (const auto& p_name : eventToSend.properties()) {
-            vv::Value *v = eventToSend[p_name.first].get()->clone();
-            event << vd::attribute(p_name.first, v);
+        for (const auto& p_name : messageToSend.getInformations()) {
+            vv::Value *v = p_name.second.get()->clone();
+            DEVS_event << vd::attribute(p_name.first, v);
             std::cout << "<\"" << p_name.first << "\",\"" << *v << "\">";
         }
-        event << vd::attribute("from",getModelName());
-        event_list.push_back(event);
+        DEVS_event << vd::attribute("sender",messageToSend.getSender());
+        DEVS_event << vd::attribute("receiver",messageToSend.getReceiver());
+        DEVS_event << vd::attribute("subject",messageToSend.getSubject());
+        event_list.push_back(DEVS_event);
         std::cout << " >";
     }
 }
@@ -173,12 +172,22 @@ void GenericAgent::handleExternalEvents(
 {
     for (const auto& event : event_list) {
         if (event->getPortName() == cInputPortName) {
-            Event incomingEvent;
-            for (const auto& attribute : event->getAttributes()) {
-                incomingEvent.add_property(attribute.first,
-                               Event::value_ptr(attribute.second->clone()));
+            std::string receiver = event->getAttributeValue("receiver")
+                                        .toString().value();
+            std::string sender = event->getAttributeValue("sender")
+                                      .toString().value();
+            std::string subject = event->getAttributeValue("subject")
+                                       .toString().value();
+
+            if (receiver == Message::BROADCAST || receiver == getModelName()) {
+                Message incomingMessage(sender,receiver,subject);
+
+                for (const auto& attribute : event->getAttributes()) {
+                    incomingMessage.getInformations()[attribute.first] =
+                                  Message::value_ptr(attribute.second->clone());
+                }
+                agent_handleEvent(incomingMessage);
             }
-            agent_handleEvent(incomingEvent);
         }
     }
 }

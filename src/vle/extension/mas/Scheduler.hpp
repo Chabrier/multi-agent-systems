@@ -44,13 +44,13 @@ public:
 
     /* Modifiers */
     /** @brief Add element*/
-    inline void add_event(const T& t)
+    inline void addEffect(const T& t)
     {
         mHeap.push(t);
     }
 
     /** @brief Remove minimal element*/
-    void remove_next_event()
+    void removeNextEffect()
     {
         if (mHeap.empty())
             throw std::out_of_range("Scheduler is empty");
@@ -75,7 +75,7 @@ public:
 
     /* Element access */
     /** @brief Get next elements of scheduler */
-    const T& next_event() const
+    const T& nextEffect() const
     {
         if (mHeap.empty())
             throw std::out_of_range("Scheduler is empty");

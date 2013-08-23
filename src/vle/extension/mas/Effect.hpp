@@ -25,9 +25,12 @@
  */
 #ifndef EFFECT_HPP
 #define EFFECT_HPP
+#include <boost/function.hpp>
 #include <vle/devs/Time.hpp>
 #include <vle/value/Value.hpp>
-#include <map>
+#include <unordered_map>
+#include <vle/extension/mas/PropertyContainer.hpp>
+
 namespace vd = vle::devs;
 namespace vv = vle::value;
 
@@ -35,27 +38,32 @@ namespace vle {
 namespace extension {
 namespace mas {
 
-class Effect
+/** @class Effect
+ *  @brief Describes an effect on agents
+ *
+ *  This class is used to apply effect on agents.
+ */
+class Effect : public PropertyContainer
 {
 public:
-    typedef std::shared_ptr<vv::Value> value_ptr;
-    typedef std::map<std::string, value_ptr> property_map;
+    typedef boost::function<void (const Effect&)> EffectFunction;
+
+public:
     Effect(const vd::Time&,const std::string&,const std::string&);
 
-    vd::Time getDate() const;
-    const std::string& getName() const;
-    property_map&  getInformations();
-    const property_map&  getInformations() const;
+    inline vd::Time getDate() const
+    {return mDate;}
+
+    inline const std::string& getName() const
+    {return mName;}
 
     friend bool operator> (const Effect&,const Effect&);
-protected:
 private:
     Effect();
 private:
     vd::Time     mDate;
     std::string  mName;
     std::string  mOrigin;
-    property_map mInformations;
 };
 
 }}} //namespace vle extension mas

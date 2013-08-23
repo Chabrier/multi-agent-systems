@@ -57,6 +57,15 @@ BOOST_AUTO_TEST_CASE( inCollisionTests )
             BOOST_ASSERT(!circle2.inCollision(segment,direction2));
         }
     }
+
+    //In contact
+    {
+        Segment segment(Point(0.0,0.0),Point(0.0,10.0));
+        Circle circle(Point(1.0,1.0),1.0);
+        Vector2d direction(-1.0,1.0);
+
+        BOOST_ASSERT(circle.inCollision(segment,direction));
+    }
 }
 
 BOOST_AUTO_TEST_CASE( collisionPointsTest )

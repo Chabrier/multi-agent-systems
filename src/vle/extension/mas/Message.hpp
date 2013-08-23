@@ -23,67 +23,57 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-#ifndef EVENTS_HPP
-#define EVENTS_HPP
-
-#include <vle/devs/Time.hpp>
+#ifndef MESSAGE_HPP
+#define MESSAGE_HPP
 #include <vle/value/Value.hpp>
-#include <vle/value/Double.hpp>
+#include <unordered_map>
+#include <vle/extension/mas/PropertyContainer.hpp>
 
-#include <map>
+namespace vle {
+namespace extension {
+namespace mas {
 
 namespace vv = vle::value;
 
-namespace vle
+/** @class Message
+ *  @brief Allows to handle messages received from the network, or to send a
+ *         message
+ *
+ * This class uses generic type vle::value:Value to store informations. You can
+ * easily send a message by specifing a sender in constructor.
+ * The Message::BROADCAST value allows to end a message to all agents.
+ *
+ * @see vle::value:Value
+ */
+class Message : public PropertyContainer
 {
-namespace extension
-{
-namespace mas
-{
-
-class Event
-{
+/* Public functions */
 public:
-    typedef std::shared_ptr<vv::Value> value_ptr;
-    typedef std::map<std::string, value_ptr> property_map;
-    Event(): Event(0) {}
-    Event(double t)
-    {
-        add_property("time", new vv::Double(t));
-    }
+    Message(const std::string&,const std::string&,const std::string&);
 
-    value_ptr property(const std::string& p)const;
+    inline std::string getSender() const
+    {return mSender;}
 
-    bool exist_property(const std::string &title)const
-    {
-        return (mProperties.find(title) != mProperties.end());
-    }
+    inline std::string getReceiver() const
+    {return mReceiver;}
 
-    void add_property(const std::string &t, vv::Value * && v)
-    {
-        add_property(t, value_ptr(v));
-    }
+    inline std::string getSubject() const
+    {return mSubject;}
 
-    void add_property(const std::string &t, const value_ptr &v)
-    {
-        if (exist_property(t))
-            mProperties.erase(t);
-        mProperties.insert(std::make_pair(t, v));
-    }
-
-    const property_map& properties() const
-    {
-        return mProperties;
-    }
-
-    friend bool operator> (const Event& a, const Event& b);
-    value_ptr operator[](const std::string&)const;
-protected:
+/* Private functions */
 private:
-    property_map mProperties;
+    Message();
+
+/* Public constants */
+public:
+    static const std::string BROADCAST;
+
+/* Private members */
+private:
+    std::string mSender;
+    std::string mReceiver;
+    std::string mSubject;
 };
 
-}
-}
-}// namespace vle extension mas
+}}} //namespace vle extension mas
 #endif

@@ -34,16 +34,11 @@
 #include <boost/numeric/ublas/vector.hpp>
 
 #include <vle/extension/mas/GenericAgent.hpp>
-#include <vle/extension/mas/Events.hpp>
 #include <vle/extension/mas/collision/Types.hpp>
 #include <vle/extension/mas/collision/Segment.hpp>
 #include <vle/extension/mas/collision/Circle.hpp>
 
 using namespace vle::extension::mas;
-namespace vd = vle::devs;
-namespace vv = vle::value;
-namespace bg = boost::geometry;
-namespace bn = boost::numeric;
 
 namespace mas
 {
@@ -51,6 +46,11 @@ namespace test
 {
 namespace dynamics
 {
+
+namespace vd = vle::devs;
+namespace vv = vle::value;
+namespace bg = boost::geometry;
+namespace bn = boost::numeric;
 
 class WallG : public GenericAgent
 {
@@ -71,14 +71,14 @@ public:
 
     void agent_dynamic() {}
 
-    void agent_handleEvent(const Event& event)
+    void agent_handleEvent(const Message& message)
     {
-        if (event.property("type")->toString().value() == "ball_position") {
-            Vector2d v_ball(event.property("dx")->toDouble().value(),
-                            event.property("dy")->toDouble().value());
-            Circle circle(Point(event.property("x")->toDouble().value(),
-                                event.property("y")->toDouble().value()),
-                          event.property("radius")->toDouble().value());
+        if (message.getSubject() == "ball_position") {
+            Vector2d v_ball(message.getInformations().at("dx")->toDouble().value(),
+                            message.getInformations().at("dy")->toDouble().value());
+            Circle circle(Point(message.getInformations().at("x")->toDouble().value(),
+                                message.getInformations().at("y")->toDouble().value()),
+                                message.getInformations().at("radius")->toDouble().value());
 
             if(circle.inCollision(mSegment,v_ball)) {
                 CollisionPoints cp = circle.collisionPoints(mSegment,v_ball);
@@ -88,12 +88,11 @@ public:
 
                 distance = bg::distance(circle.getCenter(), collision_pt);
                 time = distance / v_ball.norm();
-                ball_name = event.property("from")->toString().value();
                 if(distance > 0) {
                     sendCollisionEvent(collision_pt,
                                        distance,
                                        time+mCurrentTime,
-                                       ball_name);
+                                       message.getSender());
                 }
             }
         }
@@ -104,27 +103,24 @@ public:
                             double collision_time,
                             const std::string& ball_name)
     {
-        Event new_collision(collision_time);
+        Message m(getModelName(),ball_name,"collision");
+        Message::property_map& pm = m.getInformations();
+        pm.insert(std::make_pair("new_x",
+                       Message::value_ptr(vv::Double::create(xy_collision.x()))));
+        pm.insert(std::make_pair("new_y",
+                       Message::value_ptr(vv::Double::create(xy_collision.y()))));
+        pm.insert(std::make_pair("wall_x1",
+                       Message::value_ptr(vv::Double::create(mSegment.getEnd1().x()))));
+        pm.insert(std::make_pair("wall_y1",
+                       Message::value_ptr(vv::Double::create(mSegment.getEnd1().y()))));
+        pm.insert(std::make_pair("wall_x2",
+                       Message::value_ptr(vv::Double::create(mSegment.getEnd2().x()))));
+        pm.insert(std::make_pair("wall_y2",
+                       Message::value_ptr(vv::Double::create(mSegment.getEnd2().y()))));
+        pm.insert(std::make_pair("with",
+                       Message::value_ptr(vv::String::create("wall"))));
 
-        new_collision.add_property("new_x",
-                                   vv::Double::create(xy_collision.x()));
-        new_collision.add_property("new_y",
-                                   vv::Double::create(xy_collision.y()));
-        new_collision.add_property("wall_x1",
-                                   vv::Double::create(mSegment.getEnd1().x()));
-        new_collision.add_property("wall_y1",
-                                   vv::Double::create(mSegment.getEnd1().y()));
-        new_collision.add_property("wall_x2",
-                                   vv::Double::create(mSegment.getEnd2().x()));
-        new_collision.add_property("wall_y2",
-                                   vv::Double::create(mSegment.getEnd2().y()));
-        new_collision.add_property("with",
-                                   vv::String::create("wall"));
-        new_collision.add_property("collision_distance",
-                                   vv::Double::create(collision_distance));
-        new_collision.add_property("type",vv::String::create("collision"));
-        new_collision.add_property("to",vv::String::create(ball_name));
-        sendEvent(new_collision);
+        sendMessage(m);
     }
 
 private:

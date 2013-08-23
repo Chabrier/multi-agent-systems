@@ -22,27 +22,27 @@ struct A {
 BOOST_FIXTURE_TEST_SUITE(heap_test, A)
 BOOST_AUTO_TEST_CASE(sort_test)
 {
-    s.add_event(999);
-    s.add_event(1);
-    s.add_event(66);
-    s.add_event(99);
-    s.add_event(33);
-    s.add_event(4);
-    s.add_event(9);
+    s.addEffect(999);
+    s.addEffect(1);
+    s.addEffect(66);
+    s.addEffect(99);
+    s.addEffect(33);
+    s.addEffect(4);
+    s.addEffect(9);
 
-    BOOST_REQUIRE_EQUAL((int)s.next_event(), 1);
-    s.remove_next_event();
-    BOOST_REQUIRE_EQUAL((int)s.next_event(), 4);
-    s.remove_next_event();
-    BOOST_REQUIRE_EQUAL((int)s.next_event(), 9);
-    s.remove_next_event();
-    BOOST_REQUIRE_EQUAL((int)s.next_event(), 33);
-    s.remove_next_event();
-    BOOST_REQUIRE_EQUAL((int)s.next_event(), 66);
-    s.remove_next_event();
-    BOOST_REQUIRE_EQUAL((int)s.next_event(), 99);
-    s.remove_next_event();
-    BOOST_REQUIRE_EQUAL((int)s.next_event(), 999);
+    BOOST_REQUIRE_EQUAL((int)s.nextEffect(), 1);
+    s.removeNextEffect();
+    BOOST_REQUIRE_EQUAL((int)s.nextEffect(), 4);
+    s.removeNextEffect();
+    BOOST_REQUIRE_EQUAL((int)s.nextEffect(), 9);
+    s.removeNextEffect();
+    BOOST_REQUIRE_EQUAL((int)s.nextEffect(), 33);
+    s.removeNextEffect();
+    BOOST_REQUIRE_EQUAL((int)s.nextEffect(), 66);
+    s.removeNextEffect();
+    BOOST_REQUIRE_EQUAL((int)s.nextEffect(), 99);
+    s.removeNextEffect();
+    BOOST_REQUIRE_EQUAL((int)s.nextEffect(), 999);
 }
 
 BOOST_AUTO_TEST_CASE(empty_heap_test)
@@ -51,14 +51,14 @@ BOOST_AUTO_TEST_CASE(empty_heap_test)
         BOOST_FAIL("empty() must return false!");
 
     try {
-        s.next_event();
+        s.nextEffect();
         BOOST_FAIL("Exception must be raised..");
     } catch (const std::exception& e) {
         BOOST_TEST_MESSAGE("Exception successfully catched : ");
     }
 
     try {
-        s.remove_next_event();
+        s.removeNextEffect();
         BOOST_FAIL("Exception must be raised..");
     } catch (const std::exception& e) {
         BOOST_TEST_MESSAGE("Exception successfully catched : ");

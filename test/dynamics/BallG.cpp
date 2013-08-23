@@ -35,10 +35,7 @@
 #include <vle/extension/mas/collision/Types.hpp>
 #include <vle/extension/mas/collision/Circle.hpp>
 
-namespace vd = vle::devs;
-namespace vv = vle::value;
-namespace bg = boost::geometry;
-namespace bn = boost::numeric;
+#define toDouble(X) X->toDouble().value()
 
 using namespace vle::extension::mas;
 
@@ -49,9 +46,17 @@ namespace test
 namespace dynamics
 {
 
+namespace vd = vle::devs;
+namespace vv = vle::value;
+namespace bg = boost::geometry;
+namespace bn = boost::numeric;
+
 class BallG : public GenericAgent
 {
 public:
+
+
+    /**************************************************************************/
     BallG(const vd::DynamicsInit& init, const vd::InitEventList& events)
         : GenericAgent(init, events)
     {
@@ -61,7 +66,12 @@ public:
         mDirection.y() = events.exist("dy") ? events.getDouble("dy") : -1;
         mCircle.getRadius() = events.exist("radius")
                               ? events.getDouble("radius"):0;
+
+        addEffect("doCollision",
+                  boost::bind(&BallG::doCollision,this,_1));
     }
+
+
 protected:
     void agent_init()
     {
@@ -70,109 +80,71 @@ protected:
 
     void agent_dynamic()
     {
-        Event next_event = mScheduler.next_event();
-        mScheduler.remove_next_event();
+        Effect nextEffect = mScheduler.nextEffect();
 
-        if (next_event["type"]->toString().value() == "collision") {
-            bool corner = false;
-            Vector2d newDirection;
-            if(next_event["with"]->toString().value() == "wall") {
-                Segment s(Point(next_event["wall_x1"]->toDouble().value(),
-                                next_event["wall_y1"]->toDouble().value()),
-                          Point(next_event["wall_x2"]->toDouble().value(),
-                                next_event["wall_y2"]->toDouble().value()));
-                newDirection = mCircle.newDirection(s,mDirection);
-
-                if (!mScheduler.empty() &&
-                    mScheduler.next_event()["with"]->toString().value() == "wall") {
-                    Event next_event2 = mScheduler.next_event();
-
-                    if(next_event2["type"]->toString().value() == "collision") {
-                        Segment s2(Point(next_event2["wall_x1"]->toDouble().value(),
-                                        next_event2["wall_y1"]->toDouble().value()),
-                                  Point(next_event2["wall_x2"]->toDouble().value(),
-                                        next_event2["wall_y2"]->toDouble().value()));
-
-                        Vector2d newDirection2 = mCircle.newDirection(s2,mDirection);
-
-                        if((newDirection.x() == newDirection2.y())
-                           &&(newDirection.y() == newDirection2.y()))
-                           corner = true;
-                        else if(next_event["collision_distance"]->toDouble().value()
-                           == next_event2["collision_distance"]->toDouble().value())
-                            corner = true;
-                        else if(next_event["time"]->toDouble().value()
-                                == next_event2["time"]->toDouble().value())
-                            corner = true;
-                    }
-                }
-
-            } else if (next_event["with"]->toString().value()
-                       == "ball") {
-                newDirection.x() = next_event["new_dx"]->toDouble().value();
-                newDirection.y() = next_event["new_dy"]->toDouble().value();
-            }
-
-            mCircle.getCenter().x(next_event["new_x"]->toDouble().value());
-            mCircle.getCenter().y(next_event["new_y"]->toDouble().value());
-
-            if (!corner) {
-                mDirection = newDirection;
-            } else {
-                mDirection= mDirection * -1;
-            }
-            sendMyInformation();
-        }
-
-        while (!mScheduler.empty()) {
-            mScheduler.remove_next_event();
-        }
+        applyEffect(nextEffect.getName(),nextEffect);
     }
 
-    void agent_handleEvent(const Event &event)
+    void agent_handleEvent(const Message &message)
     {
-        std::string type = event.property("type")->toString().value();
+        std::string subject = message.getSubject();
+        Circle currentCircle = getCurrentCircle();
+        if(subject == "ball_position" || subject == "collision_callback") {
+            double c2_x = toDouble(message.getInformations().at("x"));
+            double c2_y = toDouble(message.getInformations().at("y"));
+            double c2_dx = toDouble(message.getInformations().at("dx"));
+            double c2_dy = toDouble(message.getInformations().at("dy"));
+            double c2_radius = toDouble(message.getInformations().at("radius"));
+            double date;
 
-        vd::Time delta_t = mCurrentTime - mLastUpdate;
-        double x = (mDirection.x() * delta_t) + mCircle.getCenter().x();
-        double y = (mDirection.y() * delta_t) + mCircle.getCenter().y();
-        Circle currentCircle(Point(x,y),mCircle.getRadius());
-
-        if(type == "collision") {
-            std::string receiver = event.property("to")->toString().value();
-            if(receiver == getModelName())
-                mScheduler.add_event(event);
-        } else if (type == "ball_position"
-                || ((type == "collision_callback") &&
-                  (event.property("to")->toString().value() == getModelName()))) {
-            Point c2(event.property("x")->toDouble().value(),
-                     event.property("y")->toDouble().value());
-            Vector2d d2(event.property("dx")->toDouble().value(),
-                        event.property("dy")->toDouble().value());
-
-            double radius = event.property("radius")->toDouble().value();
-            if(currentCircle.inCollision(mDirection, Circle(c2,radius),d2)) {
+            Point p2(c2_x,c2_y);
+            Vector2d d2(c2_dx,c2_dy);
+            Circle c2(Point(c2_x,c2_y),c2_radius);
+            if(currentCircle.inCollision(mDirection,c2,d2)) {
                 CollisionPoints cp = currentCircle.collisionPoints(mDirection,
-                                                              Circle(c2,radius),
-                                                              d2);
+                                                                   c2,
+                                                                   d2);
                 Vector2d new_direction = currentCircle.newDirection(mDirection,
-                                                              Circle(c2,radius),
-                                                              d2);
+                                                                    c2,
+                                                                    d2);
                 double distance = bg::distance(cp.object1CollisionPosition,
                                                currentCircle.getCenter());
-                double time = distance / mDirection.norm();
+                double date = (distance / mDirection.norm()) + mCurrentTime;
 
-                std::string to = event.property("from")->toString().value();
-                addCollisionEvent(cp.object1CollisionPosition,
-                                  new_direction,
-                                  distance,
-                                  time+mCurrentTime,
-                                  to);
-
-                // Update other ball
-                if (type == "ball_position") {
-                    sendCollisionCallback(to);
+                Effect collision = collisionEffect(date,
+                                                   message.getSender(),
+                                                cp.object1CollisionPosition.x(),
+                                                cp.object1CollisionPosition.y(),
+                                                   new_direction.x(),
+                                                   new_direction.y());
+                mScheduler.addEffect(collision);
+                if (subject == "ball_position") {
+                    sendCollisionCallback(message.getSender());
                 }
+            }
+        } else if (subject == "collision") {
+            double wall_x1 = toDouble(message.getInformations().at("wall_x1"));
+            double wall_y1 = toDouble(message.getInformations().at("wall_y1"));
+            double wall_x2 = toDouble(message.getInformations().at("wall_x2"));
+            double wall_y2 = toDouble(message.getInformations().at("wall_y2"));
+
+            Segment s(Point(wall_x1,wall_y1),Point(wall_x2,wall_y2));
+            if(currentCircle.inCollision(s,mDirection)) {
+                CollisionPoints cp = currentCircle.collisionPoints(s,
+                                                                   mDirection);
+                Vector2d new_direction = currentCircle.newDirection(s,
+                                                                   mDirection);
+                double date = (bg::distance(cp.object1CollisionPosition,
+                                               currentCircle.getCenter())
+                              / mDirection.norm()) + mCurrentTime;
+
+                Effect collision = collisionEffect(date,
+                                                   message.getSender(),
+                                                cp.object1CollisionPosition.x(),
+                                                cp.object1CollisionPosition.y(),
+                                                   new_direction.x(),
+                                                   new_direction.y());
+                mScheduler.addEffect(collision);
             }
         }
     }
@@ -181,6 +153,7 @@ protected:
     {
         vd::Time delta_t = event.getTime() - mLastUpdate;
         std::cout << "MyCurrent time" << event.getTime() << "Mylast Update:" << mLastUpdate << " delta" << delta_t << std::endl;
+
         double x = (mDirection.x() * delta_t) + mCircle.getCenter().x();
         double y = (mDirection.y() * delta_t) + mCircle.getCenter().y();
         if (event.onPort("x")) {
@@ -200,73 +173,101 @@ protected:
         return 0;
     }
 
+    /**************************** Utils ***************************************/
+    Circle getCurrentCircle() const
+    {
+        double delta_t = mCurrentTime - mLastUpdate;
+        double x = (mDirection.x() * delta_t) + mCircle.getCenter().x();
+        double y = (mDirection.y() * delta_t) + mCircle.getCenter().y();
+
+        return Circle(Point(x,y),mCircle.getRadius());
+    }
+
     void sendMyInformation()
     {
-        Event event(0);
+        Message m(getModelName(),Message::BROADCAST,"ball_position");
+        Message::property_map& pm = m.getInformations();
 
-        event.add_property("x", vv::Double::create(mCircle.getCenter().x()));
-        event.add_property("y", vv::Double::create(mCircle.getCenter().y()));
-        event.add_property("dx", vv::Double::create(mDirection.x()));
-        event.add_property("dy", vv::Double::create(mDirection.y()));
-        event.add_property("from", vv::String::create(getModelName()));
-        event.add_property("type", vv::String::create("ball_position"));
-        event.add_property("radius", vv::Double::create(mCircle.getRadius()));
+        Message::value_ptr x, y, dx, dy, radius;
 
-        sendEvent(event);
+        x = Message::value_ptr(vv::Double::create(mCircle.getCenter().x()));
+        y = Message::value_ptr(vv::Double::create(mCircle.getCenter().y()));
+        dx = Message::value_ptr(vv::Double::create(mDirection.x()));
+        dy = Message::value_ptr(vv::Double::create(mDirection.y()));
+        radius = Message::value_ptr(vv::Double::create(mCircle.getRadius()));
+
+        pm.insert(std::make_pair("x",x));
+        pm.insert(std::make_pair("y",y));
+        pm.insert(std::make_pair("dx",dx));
+        pm.insert(std::make_pair("dy",dy));
+        pm.insert(std::make_pair("radius",radius));
+
+        sendMessage(m);
     }
 
     void sendCollisionCallback(const std::string& to)
     {
-        Event event(0);
-
         vd::Time delta_t = mCurrentTime - mLastUpdate;
         double x = (mDirection.x() * delta_t) + mCircle.getCenter().x();
         double y = (mDirection.y() * delta_t) + mCircle.getCenter().y();
+        Message m(getModelName(),to,"collision_callback");
+        Message::property_map& pm = m.getInformations();
+        pm.insert(std::make_pair("x",
+                                    Message::value_ptr(vv::Double::create(x))));
+        pm.insert(std::make_pair("y",
+                                    Message::value_ptr(vv::Double::create(y))));
+        pm.insert(std::make_pair("dx",
+                       Message::value_ptr(vv::Double::create(mDirection.x()))));
+        pm.insert(std::make_pair("dy",
+                       Message::value_ptr(vv::Double::create(mDirection.y()))));
+        pm.insert(std::make_pair("radius",
+                  Message::value_ptr(vv::Double::create(mCircle.getRadius()))));
 
-        event.add_property("x", vv::Double::create(x));
-        event.add_property("y", vv::Double::create(y));
-        event.add_property("dx", vv::Double::create(mDirection.x()));
-        event.add_property("dy", vv::Double::create(mDirection.y()));
-        event.add_property("from", vv::String::create(getModelName()));
-        event.add_property("type", vv::String::create("collision_callback"));
-        event.add_property("radius", vv::Double::create(mCircle.getRadius()));
-        event.add_property("to", vv::String::create(to));
-        event.add_property("from", vv::String::create(getModelName()));
-
-        sendEvent(event);
+        sendMessage(m);
     }
 
-    void addCollisionEvent(Point xy_collision,
-                           Vector2d new_vector,
-                           double collision_distance,
-                           double collision_time,
-                           const std::string& ball_name)
+    /*************************** Effect functions *****************************/
+    /* doCollision : What do this effect ?
+     * - It computes collision position.
+     * - It updates ball direction.
+     * - It sends informative message to all agents after the update. */
+    void doCollision(const Effect& e)
     {
-        Event new_collision(collision_time);
+        double x = toDouble(e.getInformations().at("x"));
+        double y = toDouble(e.getInformations().at("y"));
+        double dx = toDouble(e.getInformations().at("dx"));
+        double dy = toDouble(e.getInformations().at("dy"));
 
-        new_collision.add_property("new_dx",
-                                   new vv::Double(new_vector.x()));
-        new_collision.add_property("new_dy",
-                                   new vv::Double(new_vector.y()));
-        new_collision.add_property("new_x",
-                                   new vv::Double(xy_collision.x()));
-        new_collision.add_property("new_y",
-                                   new vv::Double(xy_collision.y()));
-        new_collision.add_property("collision_distance",
-                                   new vv::Double(collision_distance));
-        new_collision.add_property("type",
-                                   new vv::String("collision"));
-        new_collision.add_property("with",
-                                   new vv::String("ball"));
-        new_collision.add_property("to",new vv::String(ball_name));
-        new_collision.add_property("from",new vv::String(getModelName()));
-        mScheduler.add_event(new_collision);
-        std::cout << "ADD BALL COLLISION: " << new_vector.x()
-                  << ";" << new_vector.y()
-                  << " " << xy_collision.x() << ";" << xy_collision.y()
-                  << " time=" << collision_time << std::endl;
+        /* Apply effect */
+        mDirection = Vector2d(dx,dy);
+        mCircle.getCenter() = Point(x,y);
+
+        /* Send my information */
+        sendMyInformation();
+
+        /* */
+        while (!mScheduler.empty()) {
+            mScheduler.removeNextEffect();
+        }
     }
 
+    /**************************** Effect "factory" ****************************/
+    Effect collisionEffect(double t,const std::string& source,
+                           double x,double y,double dx,double dy)
+    {
+        Effect effect(t,"doCollision",source);
+        Effect::property_map &collisionProperties = effect.getInformations();
+        collisionProperties.insert(std::make_pair("x",
+                                     Effect::value_ptr(vv::Double::create(x))));
+        collisionProperties.insert(std::make_pair("y",
+                                     Effect::value_ptr(vv::Double::create(y))));
+        collisionProperties.insert(std::make_pair("dx",
+                                    Effect::value_ptr(vv::Double::create(dx))));
+        collisionProperties.insert(std::make_pair("dy",
+                                    Effect::value_ptr(vv::Double::create(dy))));
+
+        return effect;
+    }
 private:
     Circle   mCircle;
     Vector2d mDirection;
