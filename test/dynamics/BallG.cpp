@@ -46,6 +46,7 @@ namespace test
 namespace dynamics
 {
 
+namespace vu = vle::utils;
 namespace vd = vle::devs;
 namespace vv = vle::value;
 namespace bg = boost::geometry;
@@ -90,11 +91,11 @@ protected:
         std::string subject = message.getSubject();
         Circle currentCircle = getCurrentCircle();
         if(subject == "ball_position" || subject == "collision_callback") {
-            double c2_x = toDouble(message.getInformations().at("x"));
-            double c2_y = toDouble(message.getInformations().at("y"));
-            double c2_dx = toDouble(message.getInformations().at("dx"));
-            double c2_dy = toDouble(message.getInformations().at("dy"));
-            double c2_radius = toDouble(message.getInformations().at("radius"));
+            double c2_x = toDouble(message.get("x"));
+            double c2_y = toDouble(message.get("y"));
+            double c2_dx = toDouble(message.get("dx"));
+            double c2_dy = toDouble(message.get("dy"));
+            double c2_radius = toDouble(message.get("radius"));
             double date;
 
             Point p2(c2_x,c2_y);
@@ -113,20 +114,18 @@ protected:
 
                 Effect collision = collisionEffect(date,
                                                    message.getSender(),
-                                                cp.object1CollisionPosition.x(),
-                                                cp.object1CollisionPosition.y(),
-                                                   new_direction.x(),
-                                                   new_direction.y());
+                                                   cp.object1CollisionPosition,
+                                                   new_direction);
                 mScheduler.addEffect(collision);
                 if (subject == "ball_position") {
                     sendCollisionCallback(message.getSender());
                 }
             }
         } else if (subject == "collision") {
-            double wall_x1 = toDouble(message.getInformations().at("wall_x1"));
-            double wall_y1 = toDouble(message.getInformations().at("wall_y1"));
-            double wall_x2 = toDouble(message.getInformations().at("wall_x2"));
-            double wall_y2 = toDouble(message.getInformations().at("wall_y2"));
+            double wall_x1 = toDouble(message.get("wall_x1"));
+            double wall_y1 = toDouble(message.get("wall_y1"));
+            double wall_x2 = toDouble(message.get("wall_x2"));
+            double wall_y2 = toDouble(message.get("wall_y2"));
 
             Segment s(Point(wall_x1,wall_y1),Point(wall_x2,wall_y2));
             if(currentCircle.inCollision(s,mDirection)) {
@@ -140,10 +139,8 @@ protected:
 
                 Effect collision = collisionEffect(date,
                                                    message.getSender(),
-                                                cp.object1CollisionPosition.x(),
-                                                cp.object1CollisionPosition.y(),
-                                                   new_direction.x(),
-                                                   new_direction.y());
+                                                   cp.object1CollisionPosition,
+                                                   new_direction);
                 mScheduler.addEffect(collision);
             }
         }
@@ -164,11 +161,11 @@ protected:
         }
         if (event.onPort("coordinates")) {
             std::string output;
-            output = "(" + vle::utils::toScientificString(x)
-                 + ";" + vle::utils::toScientificString(y);
-            output += ";" + vle::utils::toScientificString(mCircle.getRadius())
-                      +")";
-                return new vv::String(output);
+            output = str(boost::format("(%1%;%2%;%3%)")
+                         % vu::toScientificString(x)
+                         % vu::toScientificString(y)
+                         % vu::toScientificString(mCircle.getRadius()));
+            return new vv::String(output);
         }
         return 0;
     }
@@ -186,21 +183,12 @@ protected:
     void sendMyInformation()
     {
         Message m(getModelName(),Message::BROADCAST,"ball_position");
-        Message::property_map& pm = m.getInformations();
 
-        Message::value_ptr x, y, dx, dy, radius;
-
-        x = Message::value_ptr(vv::Double::create(mCircle.getCenter().x()));
-        y = Message::value_ptr(vv::Double::create(mCircle.getCenter().y()));
-        dx = Message::value_ptr(vv::Double::create(mDirection.x()));
-        dy = Message::value_ptr(vv::Double::create(mDirection.y()));
-        radius = Message::value_ptr(vv::Double::create(mCircle.getRadius()));
-
-        pm.insert(std::make_pair("x",x));
-        pm.insert(std::make_pair("y",y));
-        pm.insert(std::make_pair("dx",dx));
-        pm.insert(std::make_pair("dy",dy));
-        pm.insert(std::make_pair("radius",radius));
+        m.add("x",vv::Double::create(mCircle.getCenter().x()));
+        m.add("y",vv::Double::create(mCircle.getCenter().y()));
+        m.add("dx",vv::Double::create(mDirection.x()));
+        m.add("dy",vv::Double::create(mDirection.y()));
+        m.add("radius",vv::Double::create(mCircle.getRadius()));
 
         sendMessage(m);
     }
@@ -211,17 +199,12 @@ protected:
         double x = (mDirection.x() * delta_t) + mCircle.getCenter().x();
         double y = (mDirection.y() * delta_t) + mCircle.getCenter().y();
         Message m(getModelName(),to,"collision_callback");
-        Message::property_map& pm = m.getInformations();
-        pm.insert(std::make_pair("x",
-                                    Message::value_ptr(vv::Double::create(x))));
-        pm.insert(std::make_pair("y",
-                                    Message::value_ptr(vv::Double::create(y))));
-        pm.insert(std::make_pair("dx",
-                       Message::value_ptr(vv::Double::create(mDirection.x()))));
-        pm.insert(std::make_pair("dy",
-                       Message::value_ptr(vv::Double::create(mDirection.y()))));
-        pm.insert(std::make_pair("radius",
-                  Message::value_ptr(vv::Double::create(mCircle.getRadius()))));
+
+        m.add("x",vv::Double::create(x));
+        m.add("y",vv::Double::create(y));
+        m.add("dx",vv::Double::create(mDirection.x()));
+        m.add("dy",vv::Double::create(mDirection.y()));
+        m.add("radius",vv::Double::create(mCircle.getRadius()));
 
         sendMessage(m);
     }
@@ -233,10 +216,10 @@ protected:
      * - It sends informative message to all agents after the update. */
     void doCollision(const Effect& e)
     {
-        double x = toDouble(e.getInformations().at("x"));
-        double y = toDouble(e.getInformations().at("y"));
-        double dx = toDouble(e.getInformations().at("dx"));
-        double dy = toDouble(e.getInformations().at("dy"));
+        double x =  toDouble(e.get("x"));
+        double y =  toDouble(e.get("y"));
+        double dx = toDouble(e.get("dx"));
+        double dy = toDouble(e.get("dy"));
 
         /* Apply effect */
         mDirection = Vector2d(dx,dy);
@@ -253,18 +236,14 @@ protected:
 
     /**************************** Effect "factory" ****************************/
     Effect collisionEffect(double t,const std::string& source,
-                           double x,double y,double dx,double dy)
+                           const Point& position,const Vector2d& direction)
     {
         Effect effect(t,"doCollision",source);
-        Effect::property_map &collisionProperties = effect.getInformations();
-        collisionProperties.insert(std::make_pair("x",
-                                     Effect::value_ptr(vv::Double::create(x))));
-        collisionProperties.insert(std::make_pair("y",
-                                     Effect::value_ptr(vv::Double::create(y))));
-        collisionProperties.insert(std::make_pair("dx",
-                                    Effect::value_ptr(vv::Double::create(dx))));
-        collisionProperties.insert(std::make_pair("dy",
-                                    Effect::value_ptr(vv::Double::create(dy))));
+
+        effect.add("x",vv::Double::create(position.x()));
+        effect.add("y",vv::Double::create(position.y()));
+        effect.add("dx",vv::Double::create(direction.x()));
+        effect.add("dy",vv::Double::create(direction.y()));
 
         return effect;
     }

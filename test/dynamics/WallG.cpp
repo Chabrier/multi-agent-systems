@@ -74,51 +74,28 @@ public:
     void agent_handleEvent(const Message& message)
     {
         if (message.getSubject() == "ball_position") {
-            Vector2d v_ball(message.getInformations().at("dx")->toDouble().value(),
-                            message.getInformations().at("dy")->toDouble().value());
-            Circle circle(Point(message.getInformations().at("x")->toDouble().value(),
-                                message.getInformations().at("y")->toDouble().value()),
-                                message.getInformations().at("radius")->toDouble().value());
+            double dx = message.get("dx")->toDouble().value();
+            double dy = message.get("dy")->toDouble().value();
+            double c_x = message.get("x")->toDouble().value();
+            double c_y = message.get("y")->toDouble().value();
+            double radius = message.get("radius")->toDouble().value();
+            Vector2d v_ball(dx,dy);
+            Circle circle(Point(c_x,c_y),radius);
 
             if(circle.inCollision(mSegment,v_ball)) {
-                CollisionPoints cp = circle.collisionPoints(mSegment,v_ball);
-                Point collision_pt = cp.object1CollisionPosition;
-                double distance, time;
-                std::string ball_name;
-
-                distance = bg::distance(circle.getCenter(), collision_pt);
-                time = distance / v_ball.norm();
-                if(distance > 0) {
-                    sendCollisionEvent(collision_pt,
-                                       distance,
-                                       time+mCurrentTime,
-                                       message.getSender());
-                }
+                sendCollisionEvent(message.getSender());
             }
         }
     }
 
-    void sendCollisionEvent(Point xy_collision,
-                            double collision_distance,
-                            double collision_time,
-                            const std::string& ball_name)
+    void sendCollisionEvent(const std::string& ball_name)
     {
         Message m(getModelName(),ball_name,"collision");
-        Message::property_map& pm = m.getInformations();
-        pm.insert(std::make_pair("new_x",
-                       Message::value_ptr(vv::Double::create(xy_collision.x()))));
-        pm.insert(std::make_pair("new_y",
-                       Message::value_ptr(vv::Double::create(xy_collision.y()))));
-        pm.insert(std::make_pair("wall_x1",
-                       Message::value_ptr(vv::Double::create(mSegment.getEnd1().x()))));
-        pm.insert(std::make_pair("wall_y1",
-                       Message::value_ptr(vv::Double::create(mSegment.getEnd1().y()))));
-        pm.insert(std::make_pair("wall_x2",
-                       Message::value_ptr(vv::Double::create(mSegment.getEnd2().x()))));
-        pm.insert(std::make_pair("wall_y2",
-                       Message::value_ptr(vv::Double::create(mSegment.getEnd2().y()))));
-        pm.insert(std::make_pair("with",
-                       Message::value_ptr(vv::String::create("wall"))));
+
+        m.add("wall_x1",vv::Double::create(mSegment.getEnd1().x()));
+        m.add("wall_y1",vv::Double::create(mSegment.getEnd1().y()));
+        m.add("wall_x2",vv::Double::create(mSegment.getEnd2().x()));
+        m.add("wall_y2",vv::Double::create(mSegment.getEnd2().y()));
 
         sendMessage(m);
     }

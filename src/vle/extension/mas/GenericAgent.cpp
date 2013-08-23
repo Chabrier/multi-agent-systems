@@ -180,13 +180,12 @@ void GenericAgent::handleExternalEvents(
                                        .toString().value();
 
             if (receiver == Message::BROADCAST || receiver == getModelName()) {
-                Message incomingMessage(sender,receiver,subject);
+                Message incomingM(sender,receiver,subject);
 
                 for (const auto& attribute : event->getAttributes()) {
-                    incomingMessage.getInformations()[attribute.first] =
-                                  Message::value_ptr(attribute.second->clone());
+                    incomingM.add(attribute.first,attribute.second->clone());
                 }
-                agent_handleEvent(incomingMessage);
+                agent_handleEvent(incomingM);
             }
         }
     }

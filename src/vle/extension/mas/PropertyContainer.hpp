@@ -41,10 +41,32 @@ public:
 
 /* Public functions */
 public:
-    inline const property_map& getInformations() const
-    {return mInformations;}
+    inline void add(const std::string &t, vv::Value * && v)
+    {add(t, value_ptr(v)); }
 
-    inline property_map& getInformations()
+    inline bool exists(const std::string &title) const
+    {return (mInformations.find(title) != mInformations.end());}
+
+    void add(const std::string &t, const value_ptr &v)
+    {
+        if (exists(t))
+            mInformations.erase(t);
+        mInformations.insert(std::make_pair(t, v));
+    }
+
+    value_ptr get(const std::string& p) const
+    {
+        try {
+            return mInformations.at(p);
+        } catch (std::exception e) {
+            std::string txt = e.what();
+            txt = "Runtime error(PropertyContainer): property operation failed";
+            txt += " => key=" + p;
+            throw std::logic_error(txt);
+        }
+    }
+
+    inline const property_map& getInformations() const
     {return mInformations;}
 
 /* Private members */
