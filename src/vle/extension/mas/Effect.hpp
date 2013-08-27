@@ -46,10 +46,13 @@ namespace mas {
 class Effect : public PropertyContainer
 {
 public:
+    /**  Function prototype which will be use to apply effect */
     typedef boost::function<void (const Effect&)> EffectFunction;
 
 public:
-    Effect(const vd::Time&,const std::string&,const std::string&);
+    Effect(const vd::Time& t,const std::string& name,const std::string& origin)
+    :mDate(t),mName(name),mOrigin(origin)
+    {}
 
     inline vd::Time getDate() const
     {return mDate;}
@@ -57,13 +60,29 @@ public:
     inline const std::string& getName() const
     {return mName;}
 
-    friend bool operator> (const Effect&,const Effect&);
+    /* Operator overload */
+    friend bool operator==(const Effect& a,const Effect& b)
+    {
+        return (a.mDate == b.mDate)
+               &&(a.mName == b.mName)
+               &&(a.mOrigin == b.mOrigin);
+    }
+    friend bool operator< (const Effect& a,const Effect& b)
+    {return a.mDate < b.mDate;}
+    friend bool operator!=(const Effect& a, const Effect& b)
+    {return !operator==(a,b);}
+    friend bool operator> (const Effect& a, const Effect& b)
+    {return  operator< (b,a);}
+    friend bool operator<=(const Effect& a, const Effect& b)
+    {return !operator> (a,b);}
+    friend bool operator>=(const Effect& a, const Effect& b)
+    {return !operator< (a,b);}
 private:
     Effect();
 private:
-    vd::Time     mDate;
-    std::string  mName;
-    std::string  mOrigin;
+    vd::Time     mDate; /**< Date when effect must be applied */
+    std::string  mName; /**< Name of effect */
+    std::string  mOrigin; /**< Origin(model name) of effect */
 };
 
 }}} //namespace vle extension mas

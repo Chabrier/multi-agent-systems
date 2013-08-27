@@ -1,4 +1,4 @@
-SET(SRCS GenericAgent.cpp Message.cpp Effect.cpp)
+SET(SRCS GenericAgent.cpp Message.cpp)
 SET(HEADERS GenericAgent.hpp Scheduler.hpp Message.hpp Effect.hpp
     PropertyContainer.hpp)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS}
