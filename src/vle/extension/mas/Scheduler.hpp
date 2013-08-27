@@ -34,15 +34,15 @@ template <typename T>
 class Scheduler
 {
 public:
-    typedef typename std::vector<T> Heap;
+    typedef typename std::vector<T> Elements;
 
     /* Modifiers */
     /** @brief Add element*/
     inline void addEffect(const T& t)
     {
         if(!exists(t)) {
-            mHeap.push_back(t);
-            std::sort(mHeap.begin(),mHeap.end());
+            mElements.push_back(t);
+            std::sort(mElements.begin(),mElements.end());
         } else {
             throw std::logic_error("Scheduler already contains this element");
         }
@@ -51,9 +51,9 @@ public:
     /** @brief Remove minimal element*/
     inline void removeNextEffect()
     {
-        if (mHeap.empty())
+        if (mElements.empty())
             throw std::logic_error("Scheduler is empty");
-        mHeap.erase(mHeap.begin());
+        mElements.erase(mElements.begin());
     }
 
     inline void update(const T& t)
@@ -61,37 +61,37 @@ public:
         if (!exists(t))
             throw std::logic_error("Scheduler doesn't contain this element");
 
-        std::replace(mHeap.begin(), mHeap.end(), t, t);
-        std::sort(mHeap.begin(),mHeap.end());
+        std::replace(mElements.begin(), mElements.end(), t, t);
+        std::sort(mElements.begin(),mElements.end());
     }
 
     /* Observers */
     /** @brief Check if scheduler is empty
      *  @return boolean true if empty, false otherwise*/
     inline bool empty()const
-    {return mHeap.empty();}
+    {return mElements.empty();}
 
     /** @brief Get number of elements
      *  @return size_t number of elements*/
     inline size_t size() const
-    {return mHeap.size();}
+    {return mElements.size();}
 
     inline bool exists(const T& t)
-    {return std::find(mHeap.begin(),mHeap.end(),t) != mHeap.end();}
+    {return std::find(mElements.begin(),mElements.end(),t) != mElements.end();}
 
     /* Element access */
     /** @brief Get next elements of scheduler */
     inline const T& nextEffect() const
     {
-        if (mHeap.empty())
+        if (mElements.empty())
             throw std::logic_error("Scheduler is empty");
-        return mHeap.at(0);
+        return mElements.at(0);
     }
 
-    const Heap& elements() const {return mHeap;}
+    const Elements& elements() const {return mElements;}
 protected:
 private:
-    Heap mHeap;
+    Elements mElements;
 };
 
 }
