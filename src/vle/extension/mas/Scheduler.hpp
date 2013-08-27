@@ -24,29 +24,24 @@
 #define SCHEDULER_HPP
 
 #include <stdexcept>
+#include <algorithm>
 
-#include <boost/heap/fibonacci_heap.hpp>
-
-namespace vle
-{
-namespace extension
-{
-namespace mas
-{
+namespace vle {
+namespace extension {
+namespace mas {
 
 template <typename T>
 class Scheduler
 {
 public:
-    typedef typename boost::heap::fibonacci_heap
-                     <T,boost::heap::compare<std::greater<T> > >
-                     Heap;
+    typedef typename std::vector<T> Heap;
 
     /* Modifiers */
     /** @brief Add element*/
     inline void addEffect(const T& t)
     {
-        mHeap.push(t);
+        mHeap.push_back(t);
+        std::sort(mHeap.begin(),mHeap.end());
     }
 
     /** @brief Remove minimal element*/
@@ -54,8 +49,7 @@ public:
     {
         if (mHeap.empty())
             throw std::out_of_range("Scheduler is empty");
-        mHeap.pop();
-
+        mHeap.erase(mHeap.begin());
     }
 
     /* Observers */
@@ -79,7 +73,7 @@ public:
     {
         if (mHeap.empty())
             throw std::out_of_range("Scheduler is empty");
-        return mHeap.top();
+        return mHeap.at(0);
     }
 
     const Heap& elements() const {return mHeap;}
