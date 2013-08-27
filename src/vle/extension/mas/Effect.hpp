@@ -57,14 +57,19 @@ public:
     inline vd::Time getDate() const
     {return mDate;}
 
+    inline void setDate(vd::Time d)
+    {mDate = d;}
+
     inline const std::string& getName() const
     {return mName;}
+
+    inline std::string getOrigin() const
+    {return mOrigin;}
 
     /* Operator overload */
     friend bool operator==(const Effect& a,const Effect& b)
     {
-        return (a.mDate == b.mDate)
-               &&(a.mName == b.mName)
+        return (a.mName == b.mName)
                &&(a.mOrigin == b.mOrigin);
     }
     friend bool operator< (const Effect& a,const Effect& b)

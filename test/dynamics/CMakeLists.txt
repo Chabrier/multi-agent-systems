@@ -30,3 +30,9 @@ TARGET_LINK_LIBRARIES(BallG ${VLE_LIBRARIES} mas collision)
 INSTALL(TARGETS BallG
     RUNTIME DESTINATION plugins/simulator
     LIBRARY DESTINATION plugins/simulator)
+
+ADD_LIBRARY(ExecuterWallBall2 MODULE ExecuterWallBall2.cpp)
+TARGET_LINK_LIBRARIES(ExecuterWallBall2 ${VLE_LIBRARIES} mas collision)
+INSTALL(TARGETS ExecuterWallBall2
+    RUNTIME DESTINATION plugins/simulator
+    LIBRARY DESTINATION plugins/simulator)

@@ -116,7 +116,11 @@ protected:
                                                    message.getSender(),
                                                    cp.object1CollisionPosition,
                                                    new_direction);
-                mScheduler.addEffect(collision);
+                if (!mScheduler.exists(collision))
+                    mScheduler.addEffect(collision);
+                else
+                    mScheduler.update(collision);
+
                 if (subject == "ball_position") {
                     sendCollisionCallback(message.getSender());
                 }
@@ -141,8 +145,17 @@ protected:
                                                    message.getSender(),
                                                    cp.object1CollisionPosition,
                                                    new_direction);
-                mScheduler.addEffect(collision);
+                if (!mScheduler.exists(collision))
+                    mScheduler.addEffect(collision);
+                else
+                    mScheduler.update(collision);
             }
+        } else if (subject == "collision_sync") {
+            Effect e(vd::infinity,
+                     message.get("effect")->toString().value(),
+                     message.get("origin")->toString().value());
+            if (mScheduler.exists(e))
+                mScheduler.update(e);
         }
     }
 
@@ -209,6 +222,16 @@ protected:
         sendMessage(m);
     }
 
+    void sendCollisionSync(const Effect& e)
+    {
+        Message m(getModelName(),e.getOrigin(),"collision_sync");
+
+        m.add("effect",vv::String::create(e.getName()));
+        m.add("origin",vv::String::create(getModelName()));
+
+        sendMessage(m);
+    }
+
     /*************************** Effect functions *****************************/
     /* doCollision : What do this effect ?
      * - It computes collision position.
@@ -226,12 +249,17 @@ protected:
         mCircle.getCenter() = Point(x,y);
 
         /* Send my information */
+        Scheduler<Effect> tmp = mScheduler;
+        std::for_each(tmp.elements().begin(),
+                      tmp.elements().end(),
+                      [this](Effect effect) {
+                          //this->sendCollisionSync(effect);
+                          Effect e(vd::infinity,
+                                   effect.getName(),
+                                   effect.getOrigin());
+                          this->mScheduler.update(e);
+                      });
         sendMyInformation();
-
-        /* */
-        while (!mScheduler.empty()) {
-            mScheduler.removeNextEffect();
-        }
     }
 
     /**************************** Effect "factory" ****************************/
