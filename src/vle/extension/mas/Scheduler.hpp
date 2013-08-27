@@ -40,39 +40,51 @@ public:
     /** @brief Add element*/
     inline void addEffect(const T& t)
     {
-        mHeap.push_back(t);
-        std::sort(mHeap.begin(),mHeap.end());
+        if(!exists(t)) {
+            mHeap.push_back(t);
+            std::sort(mHeap.begin(),mHeap.end());
+        } else {
+            throw std::logic_error("Scheduler already contains this element");
+        }
     }
 
     /** @brief Remove minimal element*/
-    void removeNextEffect()
+    inline void removeNextEffect()
     {
         if (mHeap.empty())
-            throw std::out_of_range("Scheduler is empty");
+            throw std::logic_error("Scheduler is empty");
         mHeap.erase(mHeap.begin());
+    }
+
+    inline void update(const T& t)
+    {
+        if (!exists(t))
+            throw std::logic_error("Scheduler doesn't contain this element");
+
+        std::replace(mHeap.begin(), mHeap.end(), t, t);
+        std::sort(mHeap.begin(),mHeap.end());
     }
 
     /* Observers */
     /** @brief Check if scheduler is empty
      *  @return boolean true if empty, false otherwise*/
     inline bool empty()const
-    {
-        return mHeap.empty();
-    }
+    {return mHeap.empty();}
 
     /** @brief Get number of elements
      *  @return size_t number of elements*/
     inline size_t size() const
-    {
-        return mHeap.size();
-    }
+    {return mHeap.size();}
+
+    inline bool exists(const T& t)
+    {return std::find(mHeap.begin(),mHeap.end(),t) != mHeap.end();}
 
     /* Element access */
     /** @brief Get next elements of scheduler */
-    const T& nextEffect() const
+    inline const T& nextEffect() const
     {
         if (mHeap.empty())
-            throw std::out_of_range("Scheduler is empty");
+            throw std::logic_error("Scheduler is empty");
         return mHeap.at(0);
     }
 
