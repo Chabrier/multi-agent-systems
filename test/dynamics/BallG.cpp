@@ -253,7 +253,7 @@ protected:
         std::for_each(tmp.elements().begin(),
                       tmp.elements().end(),
                       [this](Effect effect) {
-                          //this->sendCollisionSync(effect);
+                          this->sendCollisionSync(effect);
                           Effect e(vd::infinity,
                                    effect.getName(),
                                    effect.getOrigin());
