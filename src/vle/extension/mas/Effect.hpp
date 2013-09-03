@@ -60,6 +60,9 @@ public:
     inline void setDate(vd::Time d)
     {mDate = d;}
 
+    inline bool atDate(vd::Time d)
+    {return (mDate == d);}
+
     inline const std::string& getName() const
     {return mName;}
 

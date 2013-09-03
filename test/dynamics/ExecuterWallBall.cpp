@@ -77,15 +77,57 @@ public:
         createBall(24, 24, 0, 0.5, 1);
         createBall(30, 5, -1, -1, 0.5);
         createBall(10, 2, 0.5, -0.5, 1);
-        createBall(15, 9, 0.5, 1, 1);
-        createBall(90, 24, 0, 0.5, 2);
-        createBall(38, 5, -0.5, -0.5, 0.5);
-        createBall(75, 2, 0.5, -0.5, 2);
-        createBall(60, 9, 0.5, 0.5, 3);
+// jusque là ça va...
+        createBall(15, 9, 0.5, 1, 1); //ça parre en cacahuette
+        createBall(90, 24, 0, 0.5, 2); //boom negative time advance
+        // in ball0
+        createBall(38, 5, -0.5, -0.5, 0.5); //boom negative time
+                                            //advance in ball8
+        createBall(75, 10, 0.5, -0.5, 2); // core dump si ça parre
+                                          // trop prsès du bord
+        createBall(60, 9, 0.5, 0.5, 3); // negative time advance
+
+        ///jusaue là ça "va"
+
+        //createBall(98.9759909318768, 8.05519647751272, 0.04570699, 0.705628, 1);
+        //createBall(83.5686772530714, 10.8598274705717, 0.9446442,
+        //0.5980362, 1);
+
+        // collision quadruple...
+        //createBall(5, 5, 1.0, 1.0, 3);
+        //createBall(30, 5, -1.0, 1.0, 3);
+        //createBall(5, 30, 1.0, -1.0, 3);
+        //createBall(30, 30, -1.0, -1.0, 3);
+
+        // collision triple ça ne marche pas ??? collision avec un mur
+        // peut-être??? en tout cas forçage de je suis trop près lié à l'arrondi
+        // createBall(5, 5, 1.0, 1.0, 3);
+        // createBall(30, 5, -1.0, 1.0, 3);
+        // createBall(5, 30, 1.0, -1.0, 3);
 
         //~ createBall(10, 10, -1, -1, sqrt(2)/2.0);
         //~ createBall(8, 10, 1, -1, sqrt(2)/2.0);
         //~ createBall(9, 9, 0, 1, sqrt(2)/2.0);
+        //createBall(5, 5, 1.0, 1.0, 3);
+        //createBall(30, 5, -1.0, 1.0, 3);
+
+        // collision latérale
+        //createBall(5, 5, 1.0, 1.0, 3);
+        //createBall(30, 5, -1.0, 1.0, 3);
+
+        // collision dorsale A
+        //createBall(5, 5, 1.7, 1.7, 3);
+        //createBall(20, 5, 0.0, 1.0, 3);
+
+        // collision dorsale B OUF ça va mieux.
+        //createBall(5, 5, 1.5, 1.5, 3);
+        //createBall(20, 15, 0.0, 1.0, 3);
+
+        // collision colinneaires??? ça à l'air mieux???
+
+        // createBall(1, 1, 1.0, 1.0, 0.25); //runtime error (corner problem)
+        // createBall(5, 5, -0.5, -0.5, 0.5);
+
         return vd::infinity;
     }
 

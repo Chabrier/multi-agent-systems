@@ -23,8 +23,12 @@
 #ifndef SCHEDULER_HPP
 #define SCHEDULER_HPP
 
+#include <vle/devs/Dynamics.hpp>
+
 #include <stdexcept>
 #include <algorithm>
+
+namespace vd = vle::devs;
 
 namespace vle {
 namespace extension {
@@ -35,14 +39,34 @@ class Scheduler
 {
 public:
     typedef typename std::vector<T> Elements;
+    typedef typename std::vector<T*> FirstElements;
 
     /* Modifiers */
+    inline void updateFirstElements()
+    {
+        if (mElements.empty())
+            throw std::logic_error("Scheduler is empty");
+
+        mFirstElements.clear();
+
+        vd::Time firstTime= nextEffect().getDate();
+
+        typename std::vector<T>::iterator it = mElements.begin();
+
+        while (it->getDate() == firstTime) {
+            mFirstElements.push_back(&(*it));
+            it++;
+        }
+
+    }
+
     /** @brief Add element*/
     inline void addEffect(const T& t)
     {
         if(!exists(t)) {
             mElements.push_back(t);
             std::sort(mElements.begin(),mElements.end());
+            updateFirstElements();
         } else {
             throw std::logic_error("Scheduler already contains this element");
         }
@@ -63,6 +87,7 @@ public:
 
         std::replace(mElements.begin(), mElements.end(), t, t);
         std::sort(mElements.begin(),mElements.end());
+        updateFirstElements();
     }
 
     /* Observers */
@@ -89,9 +114,12 @@ public:
     }
 
     const Elements& elements() const {return mElements;}
+
+    const FirstElements& firstElements() const {return mFirstElements;}
 protected:
 private:
     Elements mElements;
+    FirstElements mFirstElements;
 };
 
 }

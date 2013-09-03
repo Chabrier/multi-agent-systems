@@ -26,6 +26,7 @@ bool Circle::inCollision(Segment segment,const Vector2d& directionVector) const
     n_wallDirectionVector = wallDirectionVector;
     n_wallDirectionVector.normalize();
 
+
     n_directionVector = directionVector;
     n_directionVector.normalize();
 
@@ -54,10 +55,36 @@ bool Circle::inCollision(Segment segment,const Vector2d& directionVector) const
         return false;
 
     /* Compute intersection point */
-    Point directionBis = Point(mCenter.x()+directionVector.x(),
-                               mCenter.y()+directionVector.y());
-    intersectionPoint = intersection(segment.getEnd1(),segment.getEnd2(),
+
+    Point directionBis = Point(mCenter.x()+n_directionVector.x(),
+                               mCenter.y()+n_directionVector.y());
+    Point segmouveEnd1 = Point(
+        segment.getEnd1().x() + n_wallNormVector.x() * mRadius,
+        segment.getEnd1().y() + n_wallNormVector.y() * mRadius);
+
+    Point segmouveEnd2 = Point(
+        segment.getEnd2().x() + n_wallNormVector.x() * mRadius,
+        segment.getEnd2().y() + n_wallNormVector.y() * mRadius);
+
+    Vector2d movedSegment(segmouveEnd2.x() - segmouveEnd1.x(),
+                          segmouveEnd2.y() - segmouveEnd1.y());
+
+    /* Check if wall vector and direction vector are not collinear */
+    if (movedSegment.normalize() == n_directionVector ||
+        movedSegment.normalize() == -1 * n_directionVector) {
+        return false;
+    }
+
+    double div = (segmouveEnd1.x() - segmouveEnd2.x())*
+        ( mCenter.y() - directionBis.y()) - (segmouveEnd1.y() - segmouveEnd2.y())*( mCenter.x() - directionBis.x());
+
+    if (div == 0) {
+        return false;
+    }
+
+    intersectionPoint = intersection(segmouveEnd1, segmouveEnd2,
                                      mCenter,directionBis);
+
     /* Compute intersection/wall point vectors */
     Vector2d a;
     Vector2d b;
@@ -79,26 +106,55 @@ bool Circle::inCollision(Segment segment,const Vector2d& directionVector) const
 CollisionPoints Circle::collisionPoints(Segment segment,
                                         const Vector2d& directionVector) const
 {
+       Point collisionPoint;
+
+
+    Vector2d wallDirectionVector, n_wallDirectionVector;
+    Vector2d n_directionVector, n_wallNormVector, n_directionNormVector;
+
     Point intersectionPoint;
-    Point collisionPoint;
-    Vector2d n_directionVector;
+
+    /* Init variables */
+    wallDirectionVector.x() = segment.getEnd1().x() - segment.getEnd2().x();
+    wallDirectionVector.y() = segment.getEnd1().y() - segment.getEnd2().y();
+
+    n_wallDirectionVector = wallDirectionVector;
+    n_wallDirectionVector.normalize();
+
+    n_directionVector = directionVector;
+    n_directionVector.normalize();
 
     /* Extends segment  */
     segment.extends(mRadius);
 
-    /* Compute line intersection point */
+    /* Compute normal vector */
+    n_wallNormVector.x() = n_wallDirectionVector.y();
+    n_wallNormVector.y() = -n_wallDirectionVector.x();
+
+    /* reverse normal vector if it is in wrong direction */
+    Vector2d tmp(mCenter.x() - segment.getEnd1().x(),
+                 mCenter.y() - segment.getEnd1().y());
+
+    if (n_wallNormVector.dot_prod(tmp) < 0)
+        n_wallNormVector = -1 * n_wallNormVector;
+
+
+    /* Compute intersection point */
     Point directionBis = Point(mCenter.x()+directionVector.x(),
                                mCenter.y()+directionVector.y());
-    intersectionPoint = intersection(segment.getEnd1(),segment.getEnd2(),
-                                     mCenter,directionBis);
-    n_directionVector = directionVector;
-    n_directionVector.normalize();
+    Point segmouveEnd1 = Point(segment.getEnd1().x() + n_wallNormVector.x() * mRadius,
+                               segment.getEnd1().y() + n_wallNormVector.y() * mRadius);
+    Point segmouveEnd2 = Point(segment.getEnd2().x() + n_wallNormVector.x() * mRadius,
+                               segment.getEnd2().y() + n_wallNormVector.y() * mRadius);
+
+
+
+    intersectionPoint = intersection( segmouveEnd1, segmouveEnd2,
+                                      mCenter,directionBis);
 
     /* Compute ball collision point (center of the circle)*/
-    collisionPoint.x(intersectionPoint.x()
-                     + -1*n_directionVector.x()*mRadius);
-    collisionPoint.y(intersectionPoint.y()
-                     + -1*n_directionVector.y()*mRadius);
+    collisionPoint.x(intersectionPoint.x());
+    collisionPoint.y(intersectionPoint.y());
 
     CollisionPoints cp;
     cp.object1CollisionPosition = collisionPoint;
@@ -261,25 +317,55 @@ Vector2d Circle::newDirection(const Vector2d& myVelocity,
                               const Circle& c2,
                               const Vector2d& v2) const
 {
+
     CollisionPoints cp = collisionPoints(myVelocity,c2,v2);
     Point myFutureCenter = cp.object1CollisionPosition;
     Point otherCircleCenter = cp.object2CollisionPosition;
 
     Vector2d balltoballVector(otherCircleCenter.x() - myFutureCenter.x(),
                               otherCircleCenter.y() - myFutureCenter.y());
+
     Vector2d n_balltoballVector = balltoballVector;
     n_balltoballVector.normalize();
 
     Vector2d n_balltoballNormVector(n_balltoballVector.y(),
                                     -n_balltoballVector.x());
-    if(n_balltoballNormVector.dot_prod(myVelocity) < 0)
-        n_balltoballNormVector *= -1;
 
     Vector2d projection1, projection2;
-    projection1 = n_balltoballNormVector.dot_prod(myVelocity)
-                  * n_balltoballNormVector;
-    projection2 = -1*n_balltoballVector.dot_prod(myVelocity)
-                  * n_balltoballVector;
+    if(n_balltoballNormVector.dot_prod(myVelocity) < 0) {
+        n_balltoballNormVector *= -1;}
 
-    return projection1 + projection2;
+    if(n_balltoballVector.dot_prod(myVelocity) < 0) {
+        n_balltoballVector *= -1;
+        projection2 = n_balltoballVector.dot_prod(myVelocity)
+            * n_balltoballVector;
+    } else {
+        projection2 = -1* n_balltoballVector.dot_prod(myVelocity)
+            * n_balltoballVector;
+    }
+    projection1 = n_balltoballNormVector.dot_prod(myVelocity)
+        * n_balltoballNormVector;
+
+    Vector2d newProjection = projection1 + projection2;
+    Vector2d newProjectionN = newProjection;
+
+    newProjectionN.normalize();
+
+    if (determinant(myVelocity, balltoballVector) == 0 &&
+        determinant(balltoballVector, v2) == 0 &&
+        determinant(v2, newProjection) == 0) {
+        Vector2d v2n = v2;
+
+        Vector2d myVelocityn = myVelocity;
+
+        if (myVelocityn.normalize() != -1 * v2n.normalize()) {
+            if (balltoballVector.normalize() == v2n.normalize()) {
+                if (myVelocityn.normalize() != -1 * newProjectionN) {
+                    newProjection *= -1;
+                }
+            }
+        }
+    }
+
+    return newProjection;
 }

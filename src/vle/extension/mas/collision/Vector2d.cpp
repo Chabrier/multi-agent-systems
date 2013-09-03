@@ -80,3 +80,18 @@ bool operator==(const Vector2d &v1, const Vector2d &v2)
 
 bool operator!=(const Vector2d &v1, const Vector2d &v2)
 {  return (v1.mX != v2.mX) || (v1.mY != v2.mY); }
+
+double angle(const Vector2d &v1, const Vector2d &v2)
+{
+    double normv1 = std::sqrt(v1.mX * v1.mX + v1.mY * v1.mY);
+    double normv2 = std::sqrt(v2.mX * v2.mX + v2.mY * v2.mY);
+    double C = (v1.mX * v2.mX +  v1.mY * v2.mY)/(normv1 * normv2);
+    double S = v1.mX * v2.mY - v1.mY * v2.mX;
+    double sS = S/fabs(S);
+    return( sS * std::acos(C));
+}
+
+double determinant(const Vector2d &v1, const Vector2d &v2)
+{
+    return (v1.mX * v2.mY - v1.mY * v2.mX);
+}

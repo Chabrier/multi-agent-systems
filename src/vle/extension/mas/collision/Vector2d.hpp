@@ -28,6 +28,8 @@ public:
     friend Vector2d operator*(const double &d,const Vector2d &v1);
     friend bool operator==(const Vector2d &v1, const Vector2d &v2);
     friend bool operator!=(const Vector2d &v1, const Vector2d &v2);
+    friend double angle(const Vector2d &v1, const Vector2d &v2);
+    friend double determinant(const Vector2d &v1, const Vector2d &v2);
     Vector2d& operator+=(const Vector2d &v);
     Vector2d& operator-=(const Vector2d &v);
     Vector2d& operator*=(const double &d);

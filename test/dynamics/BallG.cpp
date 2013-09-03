@@ -56,8 +56,6 @@ class BallG : public GenericAgent
 {
 public:
 
-
-    /**************************************************************************/
     BallG(const vd::DynamicsInit& init, const vd::InitEventList& events)
         : GenericAgent(init, events)
     {
@@ -102,20 +100,41 @@ protected:
             Vector2d d2(c2_dx,c2_dy);
             Circle c2(Point(c2_x,c2_y),c2_radius);
             if(currentCircle.inCollision(mDirection,c2,d2)) {
+
+
                 CollisionPoints cp = currentCircle.collisionPoints(mDirection,
                                                                    c2,
                                                                    d2);
                 Vector2d new_direction = currentCircle.newDirection(mDirection,
                                                                     c2,
                                                                     d2);
+
+
                 double distance = bg::distance(cp.object1CollisionPosition,
                                                currentCircle.getCenter());
+
+                double distance2 = bg::distance(cp.object2CollisionPosition,
+                                                c2.getCenter());
+
+
                 double date = (distance / mDirection.norm()) + mCurrentTime;
 
-                Effect collision = collisionEffect(date,
-                                                   message.getSender(),
-                                                   cp.object1CollisionPosition,
-                                                   new_direction);
+                double datetr = trunc_doub(date,10);
+
+                double date2 =  trunc_doub((distance2 / d2.norm()) + mCurrentTime, 10);
+
+                double vraidate = (date + date2)/2;
+
+
+                if (datetr <= mCurrentTime)
+                    datetr = mCurrentTime;
+
+                Effect collision = ballCollisionEffect(datetr,
+                                                       message.getSender(),
+                                                       cp.object1CollisionPosition,
+                                                       new_direction,
+                                                       c2_x, c2_y, c2_dx, c2_dy, c2_radius,
+                                                       mCurrentTime);
                 if (!mScheduler.exists(collision))
                     mScheduler.addEffect(collision);
                 else
@@ -137,14 +156,16 @@ protected:
                                                                    mDirection);
                 Vector2d new_direction = currentCircle.newDirection(s,
                                                                    mDirection);
+
+
                 double date = (bg::distance(cp.object1CollisionPosition,
                                                currentCircle.getCenter())
                               / mDirection.norm()) + mCurrentTime;
 
-                Effect collision = collisionEffect(date,
-                                                   message.getSender(),
-                                                   cp.object1CollisionPosition,
-                                                   new_direction);
+                Effect collision = wallCollisionEffect(date,
+                                                       message.getSender(),
+                                                       cp.object1CollisionPosition,
+                                                       new_direction,wall_x1,wall_y1,wall_x2,wall_y2);
                 if (!mScheduler.exists(collision))
                     mScheduler.addEffect(collision);
                 else
@@ -162,7 +183,6 @@ protected:
     vv::Value* observation(const vd::ObservationEvent& event) const
     {
         vd::Time delta_t = event.getTime() - mLastUpdate;
-        std::cout << "MyCurrent time" << event.getTime() << "Mylast Update:" << mLastUpdate << " delta" << delta_t << std::endl;
 
         double x = (mDirection.x() * delta_t) + mCircle.getCenter().x();
         double y = (mDirection.y() * delta_t) + mCircle.getCenter().y();
@@ -241,12 +261,73 @@ protected:
     {
         double x =  toDouble(e.get("x"));
         double y =  toDouble(e.get("y"));
-        double dx = toDouble(e.get("dx"));
-        double dy = toDouble(e.get("dy"));
+        double dx = 0;
+        double dy = 0;
 
-        /* Apply effect */
-        mDirection = Vector2d(dx,dy);
-        mCircle.getCenter() = Point(x,y);
+        int nEffects = mScheduler.firstElements().size();
+
+        if (nEffects == 1) {
+
+            dx = toDouble(e.get("dx"));
+            dy = toDouble(e.get("dy"));
+
+            /* Apply effect */
+            mDirection = Vector2d(dx,dy);
+            mCircle.getCenter() = Point(x,y);
+        } else {
+            std::vector<Effect*> firstElements = mScheduler.firstElements();
+            for (std::vector<Effect*>::iterator it = firstElements.begin();
+                 it != firstElements.end();
+                 ++it) {
+                if (((*it)->get("type"))->toString().value() == "WALL") {
+                    double x1 = toDouble((*it)->get("x1"));
+                    double y1 = toDouble((*it)->get("y1"));
+                    double x2 = toDouble((*it)->get("x2"));
+                    double y2 = toDouble((*it)->get("y2"));
+
+                    Segment s(Point(x1,y1),Point(x2,y2));
+
+                    mCircle.getCenter() = Point(x,y);
+
+                    Circle currentCircle = getCurrentCircle();
+
+                    Vector2d new_direction = currentCircle.newDirection(s,
+                                                                        mDirection);
+
+                    double a = angle(mDirection, new_direction);
+
+
+                    mDirection = new_direction;
+
+                } else {
+                    double c2_x = toDouble((*it)->get("c2_x"));
+                    double c2_y = toDouble((*it)->get("c2_y"));
+                    double c2_dx = toDouble((*it)->get("c2_dx"));
+                    double c2_dy = toDouble((*it)->get("c2_dy"));
+                    double c2_radius = toDouble((*it)->get("c2_radius"));
+
+                    Vector2d d2(c2_dx,c2_dy);
+
+                    double delta_t = mCurrentTime - toDouble((*it)->get("last_update"));
+
+                    double nc2_x = (c2_dx * delta_t) + c2_x;
+                    double nc2_y = (c2_dy * delta_t) + c2_y;
+
+                    Circle c2(Point(nc2_x, nc2_y), c2_radius);
+                    Circle currentCircle = getCurrentCircle();
+
+                    if(currentCircle.inCollision(mDirection,c2,d2)) {
+                        Vector2d new_direction = currentCircle.newDirection(mDirection,
+                                                                            c2,
+                                                                            d2);
+
+                        double a = angle(mDirection, new_direction);
+                        mDirection = new_direction;
+                    }
+                    mCircle.getCenter() = Point(x,y);
+                }
+            }
+        }
 
         /* Send my information */
         Scheduler<Effect> tmp = mScheduler;
@@ -263,17 +344,50 @@ protected:
     }
 
     /**************************** Effect "factory" ****************************/
-    Effect collisionEffect(double t,const std::string& source,
-                           const Point& position,const Vector2d& direction)
+    Effect wallCollisionEffect(double t,const std::string& source,
+                               const Point& position,const Vector2d& direction,
+                               double x1, double y1, double x2, double y2)
     {
         Effect effect(t,"doCollision",source);
 
+        effect.add("type",vv::String::create(std::string("WALL")));
         effect.add("x",vv::Double::create(position.x()));
         effect.add("y",vv::Double::create(position.y()));
         effect.add("dx",vv::Double::create(direction.x()));
         effect.add("dy",vv::Double::create(direction.y()));
+        effect.add("x1",vv::Double::create(x1));
+        effect.add("y1",vv::Double::create(y1));
+        effect.add("x2",vv::Double::create(x2));
+        effect.add("y2",vv::Double::create(y2));
 
         return effect;
+    }
+
+    Effect ballCollisionEffect(double t,const std::string& source,
+                               const Point& position,const Vector2d& direction,
+                               double c2_x, double c2_y, double c2_dx, double c2_dy, double c2_radius,
+                               double ct)
+    {
+        Effect effect(t,"doCollision",source);
+
+        effect.add("type",vv::String::create(std::string("BALL")));
+        effect.add("x",vv::Double::create(position.x()));
+        effect.add("y",vv::Double::create(position.y()));
+        effect.add("dx",vv::Double::create(direction.x()));
+        effect.add("dy",vv::Double::create(direction.y()));
+        effect.add("c2_x",vv::Double::create(c2_x));
+        effect.add("c2_y",vv::Double::create(c2_y));
+        effect.add("c2_dx",vv::Double::create(c2_dx));
+        effect.add("c2_dy",vv::Double::create(c2_dy));
+        effect.add("c2_radius",vv::Double::create(c2_radius));
+        effect.add("last_update",vv::Double::create(ct));
+
+        return effect;
+    }
+
+    double trunc_doub(double val, int precision)
+    {
+        return floorf(val * pow(10.0f,precision) + .5f)/pow(10.0f,precision);
     }
 private:
     Circle   mCircle;
