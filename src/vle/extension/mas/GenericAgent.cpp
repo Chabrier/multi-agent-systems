@@ -90,7 +90,12 @@ vd::Time GenericAgent::timeAdvance() const
                           << mScheduler.nextEffect().getDate() - mCurrentTime
                           << std::endl;
                 /* Wake me when next event is ready*/
-                return mScheduler.nextEffect().getDate() - mCurrentTime;
+                double ta = mScheduler.nextEffect().getDate() - mCurrentTime;
+                if (ta < 0) {
+                    return 0;
+                } else {
+                    return ta;
+                }
             }
         break;
         case OUTPUT:

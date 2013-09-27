@@ -232,6 +232,9 @@ Point Circle::intersection(const Point& p1,const Point& p2,
  ** vab = va - vb
  **
  ** t^2(vab.vab) + 2t(pab.vab) + (pab.pab) - (radius(a) + radius(b))^2
+ **
+ ** seems to be very clean, and could be used to check if a bird is
+ ** leaving the neighborhood
  **/
 bool Circle::inCollision(const Vector2d& myVelocity,
                          const Circle& otherCircle,const Vector2d& v2) const
@@ -248,20 +251,31 @@ bool Circle::inCollision(const Vector2d& myVelocity,
 
     double discriminant = b * b - 4 * a * c;
 
-    if (a == 0) /* div by 0 */
+    if (a == 0) // div by 0, les vescteurs sont identiques
         return false;
 
     if (discriminant < 0) {
         /* Collision will never occure
          * Average of roots is time of closest approach, but we don't need it'*/
         return false;
+    } else if (discriminant == 0) { // frontière in out du point de
+                                    // vue du voisinage
+        return false;
     } else {
         double t0 = (-b + (double)sqrt(discriminant)) / (2 * a);
         double t1 = (-b - (double)sqrt(discriminant)) / (2 * a);
-        double t = std::min(t0, t1);
 
-        if (t < 0)/* Collision occured in the past */
+        // 2 cas
+        // si un oiseau est dans le voisnage de l'autre.
+
+        if (Vector2d(mCenter.x() - otherCircle.getCenter().x(),
+                     mCenter.y() - otherCircle.getCenter().y()).norm() <= mRadius) {
+            double t = std::max(t0, t1);
+        } else {
+            double t = std::min(t0, t1);
+            if (t < 0)/* Collision occured in the past */
             return false;
+        }
     }
 
     return true;
@@ -289,7 +303,12 @@ CollisionPoints Circle::collisionPoints(const Vector2d& myVelocity,
     } else {
         double t0 = (-b + (double)sqrt(discriminant)) / (2 * a);
         double t1 = (-b - (double)sqrt(discriminant)) / (2 * a);
-        t = std::min(t0, t1);
+        if (Vector2d(mCenter.x() - otherCircle.getCenter().x(),
+                     mCenter.y() - otherCircle.getCenter().y()).norm() <= mRadius) {
+            t = std::max(t0, t1);
+        } else {
+            t = std::min(t0, t1);
+        }
     }
 
     Vector2d collisionA, collisionB, intersectionV;
