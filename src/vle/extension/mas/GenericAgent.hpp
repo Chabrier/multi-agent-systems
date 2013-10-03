@@ -100,10 +100,10 @@ protected:
     double           mCurrentTime;  /**< Last known simulation time */
     double           mLastUpdate;   /**< Last time the model had been updated */
 private:
-    typedef enum {INIT,/**< initialization state:initialize vars and behaviour*/
-                  IDLE,/**< idle state : listen network and do dynamic*/
-                  OUTPUT/**< output state : send messages*/
-                 } states; /**< states of machine state*/
+    typedef enum {INIT,   /**< initialization state:initialize vars and behaviour*/
+                  IDLE,   /**< idle state : listen network and do dynamic*/
+                  OUTPUT  /**< output state : send messages*/
+    } states;             /**< states of machine state*/
 
     states             mState;          /**< Agent current state */
     std::vector<Message> mMessagesToSend;   /**< Events to send whith devs::output*/

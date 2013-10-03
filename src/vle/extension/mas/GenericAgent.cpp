@@ -4,13 +4,13 @@ namespace vle {
 namespace extension {
 namespace mas {
 
-
 const std::string GenericAgent::cOutputPortName = "agent_output";
 const std::string GenericAgent::cInputPortName =  "agent_input";
 
+
 GenericAgent::GenericAgent(const vd::DynamicsInit &init,
                            const vd::InitEventList &events)
-:vd::Dynamics(init,events),mState(INIT),mCurrentTime(0.0)
+    :vd::Dynamics(init,events),mCurrentTime(0.0),mState(INIT)
 { }
 
 vd::Time GenericAgent::init(const vd::Time &t)
@@ -92,17 +92,17 @@ vd::Time GenericAgent::timeAdvance() const
     return vd::infinity;
 }
 
-void GenericAgent::output(const vd::Time &t,
-                          vd::ExternalEventList &event_list) const
+void GenericAgent::output(const vd::Time& /*t*/,
+                          vd::ExternalEventList& event_list) const
 {
     switch(mState) {
-        case INIT:
+    case INIT:
         break;
-        case IDLE:
+    case IDLE:
         break;
-        case OUTPUT:
-            /* Send ALL the messages */
-            sendMessages(event_list);
+    case OUTPUT:
+        /* Send ALL the messages */
+        sendMessages(event_list);
         break;
     }
 }

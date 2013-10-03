@@ -27,6 +27,8 @@
 #include <vle/value/Map.hpp>
 #include <vle/value/Value.hpp>
 #include <vle/devs/Dynamics.hpp>
+#include <vle/devs/DynamicsDbg.hpp>
+
 #include <vle/utils/Tools.hpp>
 
 #include <boost/geometry/geometries/point_xy.hpp>
@@ -543,4 +545,4 @@ private:
 };
 
 }}} //namespace mas test dynamics
-DECLARE_DYNAMICS(mas::test::dynamics::Bird)
+DECLARE_DYNAMICS_DBG(mas::test::dynamics::Bird)

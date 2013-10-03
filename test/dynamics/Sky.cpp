@@ -27,6 +27,7 @@
 
 #include <vle/value/Value.hpp>
 #include <vle/devs/Dynamics.hpp>
+#include <vle/devs/DynamicsDbg.hpp>
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
@@ -96,6 +97,6 @@ private:
 }
 }
 } // namespace vle example
-DECLARE_DYNAMICS(mas::test::dynamics::Sky)
+DECLARE_DYNAMICS_DBG(mas::test::dynamics::Sky)
 
 
