@@ -15,12 +15,9 @@ GenericAgent::GenericAgent(const vd::DynamicsInit &init,
 
 vd::Time GenericAgent::init(const vd::Time &t)
 {
-    std::cout << "[" << getModelName() << "][" << t << "]"
-              << "(init) ";
     mCurrentTime = t;
     switch(mState) {
         case INIT:
-            std::cout << "state=INIT" << std::endl;
             /* Call internal transition */
             return 0.0;
         break;
@@ -38,25 +35,20 @@ vd::Time GenericAgent::init(const vd::Time &t)
 
 void GenericAgent::internalTransition(const vd::Time &t)
 {
-    std::cout << "[" << getModelName() << "][" << t << "]"
-              << "(internalTransition) ";
     mCurrentTime = t;
     switch(mState) {
         case INIT:
-            std::cout << "state=INIT";
             /* model initialization */
             agent_init();
             mState = IDLE;
             mLastUpdate = t;
         break;
         case IDLE:
-            std::cout << "state=IDLE";
             /* model behaviour */
             agent_dynamic();
             mLastUpdate = t;
         break;
         case OUTPUT:
-            std::cout << "state=OUTPUT";
             /* remove messages (they have been sent!)*/
             mState = IDLE;
             mMessagesToSend.clear();
@@ -66,13 +58,10 @@ void GenericAgent::internalTransition(const vd::Time &t)
     /* Send all the messages */
     if(mMessagesToSend.size() > 0)
         mState = OUTPUT;
-    std::cout << std::endl;
 }
 
 vd::Time GenericAgent::timeAdvance() const
 {
-    std::cout << "[" << getModelName() << "][" << mCurrentTime << "]"
-              << "(timeAdvance) ";
     switch(mState) {
         case INIT:
             throw vle::utils::InternalError("function timeAdvance called "\
@@ -80,15 +69,10 @@ vd::Time GenericAgent::timeAdvance() const
                                             "state");
         break;
         case IDLE:
-            std::cout << "state=IDLE";
             if (mScheduler.empty()) {
-                std::cout << " return infinity" << std::endl;
                 /* Waiting state */
                 return vd::infinity;
             } else {
-                std::cout << " return "
-                          << mScheduler.nextEffect().getDate() - mCurrentTime
-                          << std::endl;
                 /* Wake me when next event is ready*/
                 double ta = mScheduler.nextEffect().getDate() - mCurrentTime;
                 if (ta < 0) {
@@ -99,7 +83,6 @@ vd::Time GenericAgent::timeAdvance() const
             }
         break;
         case OUTPUT:
-            std::cout << "state=OUTPUT return 0.0"<< std::endl;
             /* Call vle::devs::output */
             return 0.0;
         break;
@@ -112,29 +95,21 @@ vd::Time GenericAgent::timeAdvance() const
 void GenericAgent::output(const vd::Time &t,
                           vd::ExternalEventList &event_list) const
 {
-    std::cout << "[" << getModelName() << "][" << t << "]"
-              << "(output)";
     switch(mState) {
         case INIT:
-            std::cout << "state=INIT";
         break;
         case IDLE:
-            std::cout << "state=IDLE";
         break;
         case OUTPUT:
-            std::cout << "state=OUTPUT";
             /* Send ALL the messages */
             sendMessages(event_list);
         break;
     }
-    std::cout << std::endl;
 }
 
 void GenericAgent::externalTransition(const vd::ExternalEventList &event_list,
                                       const vd::Time &t)
 {
-    std::cout << "[" << getModelName() << "][" << t << "]"
-              << "(externalTransition) ";
     mCurrentTime = t;
     switch(mState) {
         case INIT:
@@ -148,8 +123,6 @@ void GenericAgent::externalTransition(const vd::ExternalEventList &event_list,
     /* Send all the messages */
     if(mMessagesToSend.size() > 0)
         mState = OUTPUT;
-
-    std::cout << std::endl;
 }
 
 
@@ -157,17 +130,14 @@ void GenericAgent::sendMessages(vd::ExternalEventList& event_list) const
 {
     for (const auto& messageToSend : mMessagesToSend) {
         vd::ExternalEvent* DEVS_event = new vd::ExternalEvent(cOutputPortName);
-        std::cout << "< ";
         for (const auto& p_name : messageToSend.getInformations()) {
             vv::Value *v = p_name.second.get()->clone();
             DEVS_event << vd::attribute(p_name.first, v);
-            std::cout << "<\"" << p_name.first << "\",\"" << *v << "\">";
         }
         DEVS_event << vd::attribute("sender",messageToSend.getSender());
         DEVS_event << vd::attribute("receiver",messageToSend.getReceiver());
         DEVS_event << vd::attribute("subject",messageToSend.getSubject());
         event_list.push_back(DEVS_event);
-        std::cout << " >";
     }
 }
 

@@ -369,16 +369,12 @@ protected:
 
         mCircle.getCenter() = Point(x,y);
 
-        std::cout << "???????enterAgain==================" << mCurrentTime  << " " <<x <<" " <<y << std::endl;
-
-
         sendBirdInformation();
         sendAskForInformation(Message::BROADCAST);
     }
 
     void updateAccordingNeighborhood(const Effect& e)
     {
-        std::cout << "coucouuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu---> " << mVoisinage.size() << std::endl;
         if (mVoisinage.size() != 0) { // if any flockmates
 
             //find-nearest-neighbor
@@ -431,8 +427,6 @@ protected:
             } else {
                 // align ...cohere
 
-                std::cout << "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO" << mVoisinage.size() << std::endl;
-
                 double dx = 0;
                 double dy = 0;
 
@@ -459,8 +453,6 @@ protected:
                 //tmpangle /=10;
 
                 double andegre = tmpangle / M_PI * 180; // reverse x / 180 * M_PI
-
-                std::cout << "roooooooooooooooooooooooTATE  " <<  dx << " " << dy << "  " <<  mDirection.x() <<" " << mDirection.y() << " "<< andegre << std::endl;
 
                 mCircle = getCurrentCircle();
                 //mDirection = Vector2d(dx, dy);
@@ -496,14 +488,9 @@ protected:
 
         if (mVoisinage.find((e.getOrigin())) != mVoisinage.end()) {
             mVoisinage.erase(e.getOrigin());
-            std::cout << "OUUUUUUUUUUUUUUUUUUUUUUUUUUUUUTabc" << std::endl;
         } else {
             mVoisinage[e.getOrigin()] = new BirdInfo(x, y, dx, dy);
-            std::cout << "INNNNNNNNNNNNNNNNNNNNNNNNNNNNNabc" << std::endl;
         }
-
-          //sendAskForInformation(e.getOrigin());
-          //std::cout<<"pbpbpbpbpbpbpbpbpbpbpbpbpbbp     "<<  e.getOrigin() << std::endl;
     }
 
     /**************************** Effect "factory" ****************************/
