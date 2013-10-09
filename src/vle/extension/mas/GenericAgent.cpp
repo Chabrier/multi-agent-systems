@@ -141,26 +141,20 @@ void GenericAgent::sendMessages(vd::ExternalEventList& event_list) const
     }
 }
 
-
 void GenericAgent::handleExternalEvents(
-                                    const vd::ExternalEventList &event_list)
+    const vd::ExternalEventList &event_list)
 {
     for (const auto& event : event_list) {
         if (event->getPortName() == cInputPortName) {
             std::string receiver = event->getAttributeValue("receiver")
-                                        .toString().value();
+                .toString().value();
             std::string sender = event->getAttributeValue("sender")
-                                      .toString().value();
+                .toString().value();
             std::string subject = event->getAttributeValue("subject")
-                                       .toString().value();
+                .toString().value();
 
             if (receiver == Message::BROADCAST || receiver == getModelName()) {
-                Message incomingM(sender,receiver,subject);
-
-                for (const auto& attribute : event->getAttributes()) {
-                    incomingM.add(attribute.first,attribute.second->clone());
-                }
-                agent_handleEvent(incomingM);
+                agent_handleEvent(event);
             }
         }
     }

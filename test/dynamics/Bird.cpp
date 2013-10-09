@@ -45,6 +45,7 @@
 #define toDouble(X) X->toDouble().value()
 
 using namespace vle::extension::mas;
+namespace vd = vle::devs;
 
 typedef boost::geometry::model::linestring<Point> Line;
 
@@ -114,7 +115,6 @@ protected:
                                                           getModelName()+"toto");
 
         mScheduler.addEffect(update);
-
     }
 
     void agent_dynamic()
@@ -124,14 +124,14 @@ protected:
         applyEffect(nextEffect.getName(),nextEffect);
     }
 
-    void agent_handleEvent(const Message &message)
+    void agent_handleEvent(const vd::ExternalEvent* message)
     {
-        std::string subject = message.getSubject();
-        if(subject == "enterAgain") {
-            double north = toDouble(message.get("north"));
-            double south = toDouble(message.get("south"));
-            double east = toDouble(message.get("east"));
-            double west = toDouble(message.get("west"));
+        std::string subject = message->getAttributeValue("subject").toString().value();
+        if( subject == "enterAgain") {
+            double north = message->getDoubleAttributeValue("north");
+            double south = message->getDoubleAttributeValue("south");
+            double east = message->getDoubleAttributeValue("east");
+            double west = message->getDoubleAttributeValue("west");
 
             // calcul de la + grande dimension du ciel + une marge
             Vector2d diag(north - south, east - west);
@@ -139,9 +139,7 @@ protected:
             double bigDim = diag.norm() + 11;
 
             // on calcul le point d'intersection
-
             Vector2d dirBird = mDirection.normalize();
-
             Circle currentBird = getCurrentCircle();
 
             double xOutside = currentBird.getCenter().x() +  dirBird.x() * bigDim;
@@ -167,6 +165,16 @@ protected:
             std::vector<Point> intersection;
             boost::geometry::intersection(trajectoire, ciel, intersection);
             // durée
+            if (intersection.size() == 0 ) {
+                throw vle::utils::ModellingError(str(boost::format("MODELING_ERROR: The bird seems have leaved the sky(%1%;%2%;%3%;%4%;%5%;%6%;%7%)")
+                                                     % (mCurrentTime - mLastUpdate)
+                                                     % mCircle.getCenter().x()
+                                                     % mCircle.getCenter().y()
+                                                     % currentBird.getCenter().x()
+                                                     % currentBird.getCenter().y()
+                                                     % xOutside
+                                                     % yOutside));
+            }
 
             Vector2d centerWall(intersection.at(0).x()-currentBird.getCenter().x(),
                                 intersection.at(0).y()-currentBird.getCenter().y());
@@ -220,7 +228,7 @@ protected:
             }
 
             Effect enterAgain = enterAgainEffect(date,
-                                                 message.getSender(),
+                                                 message->getAttributeValue("sender").toString().value(),
                                                  xInterOp,
                                                  yInterOp);
 
@@ -230,14 +238,14 @@ protected:
             else
                 mScheduler.update(enterAgain);
         } else if (subject == "birdPosition") {
-            double x = toDouble(message.get("x"));
-            double y = toDouble(message.get("y"));
-            double dx = toDouble(message.get("dx"));
-            double dy = toDouble(message.get("dy"));
+            double x = message->getDoubleAttributeValue("x");
+            double y = message->getDoubleAttributeValue("y");
+            double dx = message->getDoubleAttributeValue("dx");
+            double dy = message->getDoubleAttributeValue("dy");
 
             //update the voisinage
             std::map< std::string, BirdInfo* >::const_iterator it;
-            it = mVoisinage.find(message.getSender());
+            it = mVoisinage.find(message->getAttributeValue("sender").toString().value());
 
             //TODO
             if (it != mVoisinage.end() )
@@ -268,7 +276,7 @@ protected:
                 double date = (distance / mDirection.norm()) + mCurrentTime;
 
                 Effect enterOrLeaveNeighborhood = enterOrLeaveNeighborhoodEffect(date,
-                                                                                 message.getSender(),
+                                                                                 message->getAttributeValue("sender").toString().value(),
                                                                                  x, y, dx, dy);
 
                 if (!mScheduler.exists(enterOrLeaveNeighborhood))
@@ -277,12 +285,12 @@ protected:
                     mScheduler.update(enterOrLeaveNeighborhood);
 
             } else {
-                if (mVoisinage.find((message.getSender())) != mVoisinage.end()) {
-                    mVoisinage.erase(message.getSender());
+                if (mVoisinage.find((message->getAttributeValue("sender").toString().value())) != mVoisinage.end()) {
+                    mVoisinage.erase(message->getAttributeValue("sender").toString().value());
                 }
 
                 Effect enterOrLeaveNeighborhood = enterOrLeaveNeighborhoodEffect(vd::infinity,
-                                                                                 message.getSender(),
+                                                                                 message->getAttributeValue("sender").toString().value(),
                                                                                  x, y, dx, dy);
 
                 if (!mScheduler.exists(enterOrLeaveNeighborhood))
@@ -459,7 +467,10 @@ protected:
                 mCircle = getCurrentCircle();
                 //mDirection = Vector2d(dx, dy);
 
+                Vector2d mPrevious = mDirection;
+
                 mDirection.rotate(tmpangle);
+
             }
 
             sendBirdInformation();

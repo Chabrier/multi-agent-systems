@@ -59,9 +59,9 @@ public:
         // Les limites du ciel
 
         mNorth = events.exist("north") ? events.getDouble("north") : 0;
-        mSouth = events.exist("south") ? events.getDouble("south") : 70;
+        mSouth = events.exist("south") ? events.getDouble("south") : 100;
         mEast = events.exist("east") ? events.getDouble("east") : 0;
-        mWest = events.exist("west") ? events.getDouble("west") : 70;
+        mWest = events.exist("west") ? events.getDouble("west") : 100;
 
         // Le rayon du voisinage des oiseaux
 
@@ -75,7 +75,7 @@ public:
 
         // Et la taille de la population
 
-        mPopulation = events.exist("population") ? events.getDouble("population") : 10;
+        mPopulation = events.exist("population") ? events.getInt("population") : 100;
 
         mView = "view1";
 

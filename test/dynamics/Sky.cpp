@@ -69,10 +69,10 @@ public:
 
     void agent_dynamic() {}
 
-    void agent_handleEvent(const Message& message)
+    void agent_handleEvent(const vd::ExternalEvent* message)
     {
-        if (message.getSubject() == "birdPosition") {
-            sendEnterAgainEvent(message.getSender());
+        if (message->getStringAttributeValue("subject") == "birdPosition") {
+            sendEnterAgainEvent(message->getStringAttributeValue("sender"));
         }
     }
 

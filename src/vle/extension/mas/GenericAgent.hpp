@@ -81,7 +81,7 @@ protected:
     /** @brief Pure virtual agent functions. Modeler must override them */
     virtual void agent_init() = 0;
     /** @brief Pure virtual agent functions. Modeler must override them */
-    virtual void agent_handleEvent(const Message&) = 0;
+    virtual void agent_handleEvent(const vd::ExternalEvent*) = 0;
 
     /* Utils functions */
     inline void sendMessage(Message& m) { mMessagesToSend.push_back(m); }
