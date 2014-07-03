@@ -186,46 +186,65 @@ protected:
             if (date <= mCurrentTime)
                 date = mCurrentTime;
 
-            // La trajectoire opposée
-            Line trajectoireOpposee;
-            xOutside = currentBird.getCenter().x() +  (-dirBird.x() * bigDim);
-            yOutside = currentBird.getCenter().y() +  (-dirBird.y() * bigDim);
-            double xBirdMoreInside = (currentBird.getCenter().x() +  intersection.at(0).x())/2;
-            double yBirdMoreInside = (currentBird.getCenter().y() +  intersection.at(0).y())/2;
-
-            // La trajectoire
-            trajectoireOpposee.push_back(Point(xBirdMoreInside, yBirdMoreInside));
-            trajectoireOpposee.push_back(Point(xOutside, yOutside));
-            // intersection
-            std::vector<Point> intersectionOpposee;
-             //Le ciel intérieur
-            Line interieurCiel;
-
-            interieurCiel.push_back(Point(east + 0.1, north + 0.1));
-            interieurCiel.push_back(Point(west - 0.1, north + 0.1));
-            interieurCiel.push_back(Point(west - 0.1, south - 0.1));
-            interieurCiel.push_back(Point(east + 0.1, south - 0.1));
-            interieurCiel.push_back(Point(east + 0.1, north + 0.1));
-
-            boost::geometry::intersection(trajectoireOpposee, interieurCiel, intersectionOpposee);
+            // another way to cross the sky
 
             double xInterOp, yInterOp;
 
-            if (intersectionOpposee.size() == 2 ) {
-                if( Vector2d(intersectionOpposee.at(0).x() - xBirdMoreInside,
-                             intersectionOpposee.at(0).y() - yBirdMoreInside ).norm()
-                    < Vector2d(intersectionOpposee.at(1).x() - xBirdMoreInside,
-                               intersectionOpposee.at(1).y() - yBirdMoreInside).norm()) {
-                    xInterOp = intersectionOpposee.at(1).x();
-                    yInterOp = intersectionOpposee.at(1).y();
-                } else {
-                    xInterOp = intersectionOpposee.at(0).x();
-                    yInterOp = intersectionOpposee.at(0).y();
-                }
-            } else {
-                xInterOp = intersectionOpposee.at(0).x();
-                yInterOp = intersectionOpposee.at(0).y();
-            }
+            xInterOp = intersection.at(0).x();
+            yInterOp = intersection.at(0).y();
+
+            if (intersection.at(0).x() <= east + 0.01)
+                xInterOp = west - 0.1;
+            if (intersection.at(0).x() >= west - 0.01)
+                xInterOp = east + 0.1;
+            if (intersection.at(0).y() <= north + 0.01)
+                yInterOp = south - 0.1;
+            if (intersection.at(0).y() >= south - 0.01)
+                yInterOp = north + 0.1;
+
+
+            // // La trajectoire opposée
+            // Line trajectoireOpposee;
+            // xOutside = currentBird.getCenter().x() +  (-dirBird.x() * bigDim);
+            // yOutside = currentBird.getCenter().y() +  (-dirBird.y() * bigDim);
+            // double xBirdMoreInside = (currentBird.getCenter().x() +  intersection.at(0).x())/2;
+            // double yBirdMoreInside = (currentBird.getCenter().y() +  intersection.at(0).y())/2;
+
+            // // La trajectoire
+            // trajectoireOpposee.push_back(Point(xBirdMoreInside, yBirdMoreInside));
+            // trajectoireOpposee.push_back(Point(xOutside, yOutside));
+            // // intersection
+            // std::vector<Point> intersectionOpposee;
+            //  //Le ciel intérieur
+            // Line interieurCiel;
+
+            // interieurCiel.push_back(Point(east + 0.1, north + 0.1));
+            // interieurCiel.push_back(Point(west - 0.1, north + 0.1));
+            // interieurCiel.push_back(Point(west - 0.1, south - 0.1));
+            // interieurCiel.push_back(Point(east + 0.1, south - 0.1));
+            // interieurCiel.push_back(Point(east + 0.1, north + 0.1));
+
+            // boost::geometry::intersection(trajectoireOpposee, interieurCiel, intersectionOpposee);
+
+            // double xInterOp, yInterOp;
+
+            // if (intersectionOpposee.size() == 2 ) {
+            //     if( Vector2d(intersectionOpposee.at(0).x() - xBirdMoreInside,
+            //                  intersectionOpposee.at(0).y() - yBirdMoreInside ).norm()
+            //         < Vector2d(intersectionOpposee.at(1).x() - xBirdMoreInside,
+            //                    intersectionOpposee.at(1).y() - yBirdMoreInside).norm()) {
+            //         xInterOp = intersectionOpposee.at(1).x();
+            //         yInterOp = intersectionOpposee.at(1).y();
+            //     } else {
+            //         xInterOp = intersectionOpposee.at(0).x();
+            //         yInterOp = intersectionOpposee.at(0).y();
+            //     }
+            // } else {
+            //     xInterOp = intersectionOpposee.at(0).x();
+            //     yInterOp = intersectionOpposee.at(0).y();
+            // }
+
+
 
             Effect enterAgain = enterAgainEffect(date,
                                                  message->getAttributeValue("sender").toString().value(),
@@ -321,6 +340,16 @@ protected:
                          % vu::toScientificString(x)
                          % vu::toScientificString(y)
                          % vu::toScientificString(mCircle.getRadius()));
+            return new vv::String(output);
+        }
+        if (event.onPort("coordinates&Headings")) {
+            std::string output;
+            output = str(boost::format("(%1%;%2%;%3%;%4%;%5%)")
+                         % vu::toScientificString(x)
+                         % vu::toScientificString(y)
+                         % vu::toScientificString(mCircle.getRadius())
+                         % vu::toScientificString(mDirection.x())
+                         % vu::toScientificString(mDirection.y()));
             return new vv::String(output);
         }
         return 0;

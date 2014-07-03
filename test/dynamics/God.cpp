@@ -147,7 +147,7 @@ public:
     void createBird(double x, double y, double dx, double dy, double radius)
     {
         std::string id = boost::lexical_cast<std::string>(mBirdNumbers);
-        std::string obs_ports[] = {"coordinates"};
+        std::string obs_ports[] = {"coordinates&Headings"};
         std::map<std::string,vv::Value*> cond_map =
             {{"x",vv::Double::create(x)},
              {"y",vv::Double::create(y)},

@@ -2,9 +2,9 @@
 <!DOCTYPE vle_project PUBLIC "-//VLE TEAM//DTD Strict//EN" "http://www.vle-project.org/vle-1.1.0.dtd">
 <vle_project version="1.1.0" date="2013-Jul-05 08:38:13" author="Remy Phelipot">
 <structures>
-<model name="Top model" type="coupled" x="0" y="0" width="484" height="397"  >
+<model name="Top model" type="coupled" x="0" y="0" width="484" height="367"  >
 <submodels>
-<model name="birds" type="atomic" conditions="condXBirds,condXSky" dynamics="dyn_exe" x="69" y="61" width="100" height="30" >
+<model name="birds" type="atomic" conditions="condXBirds,condXSky" dynamics="dyn_exe" x="34" y="40" width="100" height="30" >
 </model>
 </submodels>
 <connections>
@@ -14,11 +14,11 @@
 <dynamics>
 <dynamic name="dyn_exe" library="God" package="vle.extension.mas"  />
 </dynamics>
-<experiment name="exp" duration="2000.000000000000000" begin="0.000000000000000" combination="linear"  >
+<experiment name="exp" duration="1000.000000000000000" begin="0.000000000000000" combination="linear"  >
 <conditions>
 <condition name="condXBirds" >
  <port name="population" >
-<integer>50</integer>
+<integer>30</integer>
 </port>
 </condition>
 <condition name="condXSky" >
@@ -29,17 +29,16 @@
 <double>0.000000000000000</double>
 </port>
  <port name="south" >
-<double>500.000000000000000</double>
+<double>100.000000000000000</double>
 </port>
  <port name="west" >
-<double>500.000000000000000</double>
+<double>100.000000000000000</double>
 </port>
 </condition>
 </conditions>
 <views>
 <outputs>
-<output name="view1" location="" format="local" package="vle.output"  plugin="file" >
-<map><key name="julian-day"><boolean>false</boolean></key><key name="locale"><string>C</string></key><key name="type"><string>text</string></key></map></output>
+<output name="view1" location="" format="local" package="vle.output"  plugin="file" />
 
 </outputs>
 <view name="view1" output="view1" type="timed" timestep="1.000000000000000" />
