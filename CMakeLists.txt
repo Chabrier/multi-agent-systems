@@ -64,9 +64,24 @@ FIND_PACKAGE(Boost 1.47 COMPONENTS graph random REQUIRED)
 FIND_PACKAGE(Boost 1.47 COMPONENTS unit_test_framework)
 
 ##
-## Find vle package
+## Modules
+##
+
+INCLUDE(CheckIncludeFileCXX)
+INCLUDE(CheckIncludeFile)
+INCLUDE(CheckLibraryExists)
+INCLUDE(CMakeDetermineCCompiler)
+
+##
+## Check VLE and package dependencies
+##
+
 set(VLE_DEBUG 0)
+set(VLE_ABI_VERSION 1.3)
 find_package(VLE REQUIRED)
+set (VleUtils_DIR "${CMAKE_SOURCE_DIR}/cmake")
+find_package(VleUtils REQUIRED)
+VleCheckDependencies()
 
 ##
 ## Add source directory
