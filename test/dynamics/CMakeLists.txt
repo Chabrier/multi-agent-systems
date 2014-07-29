@@ -1,4 +1,5 @@
-include_directories(${CMAKE_SOURCE_DIR}/src ${VLE_INCLUDE_DIRS})
+include_directories(${CMAKE_SOURCE_DIR}/src ${VLE_INCLUDE_DIRS}
+  ${LUA_INCLUDE_DIR})
 link_directories(${VLE_LIBRARY_DIRS} ${CMAKE_SOURCE_DIR}/lib)
 
 #~ ADD_LIBRARY(Ball MODULE Ball.cpp)
@@ -52,5 +53,11 @@ INSTALL(TARGETS Bird
 ADD_LIBRARY(God MODULE God.cpp)
 TARGET_LINK_LIBRARIES(God ${VLE_LIBRARIES} mas collision)
 INSTALL(TARGETS God
+    RUNTIME DESTINATION plugins/simulator
+    LIBRARY DESTINATION plugins/simulator)
+
+ADD_LIBRARY(GodLua MODULE GodLua.cpp GodProxy.cpp lunar.h)
+TARGET_LINK_LIBRARIES(GodLua ${VLE_LIBRARIES} mas collision ${LUA_LIBRARIES})
+INSTALL(TARGETS GodLua
     RUNTIME DESTINATION plugins/simulator
     LIBRARY DESTINATION plugins/simulator)

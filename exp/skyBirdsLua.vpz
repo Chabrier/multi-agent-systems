@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE vle_project PUBLIC "-//VLE TEAM//DTD Strict//EN" "http://www.vle-project.org/vle-1.3.0.dtd">
+<vle_project version="1.1.0" date="2013-Jul-05 08:38:13" author="Remy Phelipot">
+<structures>
+<model name="Top model" type="coupled" x="0" y="0" width="833" height="367"  >
+<submodels>
+<model name="birds" type="atomic" conditions="condScript,condXBirds,condXSky" dynamics="dyn_exe" x="34" y="40" width="100" height="30" >
+</model>
+</submodels>
+<connections>
+</connections>
+</model>
+</structures>
+<dynamics>
+<dynamic name="dyn_exe" library="GodLua" package="vle.extension.mas"  />
+</dynamics>
+<experiment name="exp" combination="linear"  >
+<conditions>
+<condition name="condScript" >
+ <port name="luaScript" >
+<string>
+
+print "Script Started"
+
+function myRandom(min, max)
+   local rand = 0
+
+   rand = min + (math.random() * (max - min))
+
+   return rand
+end
+x = math.random()
+gp:createSky(pNorth, pSouth, pEast, pWest)
+
+nbAgent = 1
+
+--for i = 1, pPopulation, 1 do
+for i = 1, 5, 1 do
+
+   x = myRandom(pEast + pRadiusMax, pWest - pRadiusMax)
+   y = myRandom(pNorth + pRadiusMax, pSouth - pRadiusMax)
+
+   while gp:inANeigborhood(x, y) do
+      x = myRandom(pEast + pRadiusMax, pWest - pRadiusMax)
+      y = myRandom(pNorth + pRadiusMax, pSouth - pRadiusMax)
+   end
+
+   if pRadiusMin == pRadiusMax then
+      radius = pRadiusMin
+   else
+      radius = myRandom(pRadiusMin, pRadiusMax)
+   end
+
+   if pSpeedMin == pSpeedMax then
+      speed = pSpeedMin
+   else
+      speed = myRandom(pSpeedMin, pSpeedMax)
+   end
+
+   angle = myRandom(0, 360);
+
+   anglebis = angle / 180 * math.pi
+   hx = - math.sin(anglebis)
+   hy = math.cos(anglebis)
+
+   gp:createBird(x, y, hx * speed, hy * speed, radius)
+
+   nbAgent = nbAgent + 1;
+
+end
+
+print "Script Ended"
+
+</string>
+</port>
+</condition>
+<condition name="condXBirds" >
+ <port name="population" >
+<integer>30</integer>
+</port>
+</condition>
+<condition name="condXSky" >
+ <port name="east" >
+<double>0.000000000000000</double>
+</port>
+ <port name="north" >
+<double>0.000000000000000</double>
+</port>
+ <port name="south" >
+<double>100.000000000000000</double>
+</port>
+ <port name="west" >
+<double>100.000000000000000</double>
+</port>
+</condition>
+<condition name="simulation_engine" >
+ <port name="begin" >
+<double>0.000000000000000</double>
+<double>0.000000000000000</double>
+</port>
+ <port name="duration" >
+<double>100.000000000000000</double>
+<double>100.000000000000000</double>
+</port>
+</condition>
+</conditions>
+<views>
+<outputs>
+<output name="view1" location="" format="local" package="vle.output"  plugin="file" />
+
+</outputs>
+<view name="view1" output="view1" type="timed" timestep="1.000000000000000" />
+
+</views>
+</experiment>
+</vle_project>

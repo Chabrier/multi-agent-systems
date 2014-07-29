@@ -84,6 +84,11 @@ find_package(VleUtils REQUIRED)
 VleCheckDependencies()
 
 ##
+## Find Lua libs
+##
+FIND_PACKAGE(Lua51 REQUIRED)
+
+##
 ## Add source directory
 ##
 ADD_SUBDIRECTORY(src)
